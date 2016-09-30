@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<Context path="/geneActiv">
+    <Resource
+        name="jdbc/db" type="javax.sql.DataSource"
+        maxActive="100" maxIdle="30" maxWait="10000" 
+        url="jdbc:mysql://127.0.0.1:3306/geneactivschema"
+        driverClassName="com.mysql.jdbc.Driver"
+        username="AppsScript" password="iamgoogle"
+    />
+</Context>

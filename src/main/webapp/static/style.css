@@ -1,0 +1,581 @@
+
+body{
+    min-width:720px;
+}
+
+.result-display {
+  margin-left: 15px;
+  font-size: 125%;
+}
+.error {
+  color: #FF0000;
+}
+.hidden {
+  display: none;
+}
+.google-visualization-controls-label {
+  margin-left: 20px;  
+}
+#dashboard-div {
+  width: 800px;
+}
+#control-div {
+  margin: 70px;
+}
+#charts-div {
+  margin: 10px;
+}
+#slider-div {
+  float:left;
+}
+
+#piechart-div {
+  width: 50%;
+  height: 250px;
+  float:left;
+}
+#table-div {
+  width: 50%;
+  float:right;
+}
+
+
+
+
+
+
+.ui-state-active, .ui-widget-content .ui-state-active   {
+
+    border: 1px solid #d3d3d3 ;
+    background:#e6e6e6 url("https://code.jquery.com/ui/1.11.4/themes/smoothness/images/ui-bg_glass_75_e6e6e6_1x400.png") 50% 50% repeat-x ;
+    color: #555555 ;
+}
+
+.ui-datepicker-calendar .ui-state-highlight{
+
+    border: 1px solid #d3d3d3;
+    background: #e6e6e6 url("https://code.jquery.com/ui/1.11.4/themes/smoothness/images//ui-bg_glass_75_e6e6e6_1x400.png") 50% 50% repeat-x;
+    color: #555555;
+
+
+}
+
+
+#datepickerGENE{
+    position: relative;
+    z-index: 1000;
+
+}
+.ui-tooltip {
+   z-index:1001;
+}
+
+/*COLOR DATEPICKER DATES*/
+
+
+.ui-datepicker-calendar .selected a {  
+    background-color: #357ae8 ;
+    background-image :none ;
+    color: #ffffff ;
+
+}
+
+
+.ui-datepicker-calendar .full a {  
+    background-color: #68d898 ;
+    background-image :none ;
+    color: #ffffff ;
+
+}
+
+.ui-datepicker-calendar .part a {  
+    background-color: #78781a ;
+    background-image :none ;
+    color: #ffffff ;
+
+}
+
+.dateTypeTip{
+    border-radius: 10px;
+    width: 11px;
+    height: 11px;
+    display: inline-block;
+    border: solid grey 1px;
+    text-align: center;
+    vertical-align: middle;
+    line-height: 11px;
+    font-size: smaller;
+    font-weight: bold;
+    background: #c2f6c2;
+    cursor: default;
+}
+
+#datepickerLabel{
+    display:inline;
+}
+
+
+
+.ui-selectmenu-text, .ui-menu-item { 
+    font-family: Trebuchet MS, Tahoma, Verdana,
+     Arial, sans-serif;
+     font-size: 13px; 
+}
+
+
+
+.selectorLabel {
+     font-family: Trebuchet MS, Tahoma, Verdana,Arial, sans-serif;
+     font-size: 12px; 
+     display:block;
+}
+
+.flexDiv {
+
+     margin-right:40px;
+     vertical-align:top;
+    
+     padding:10px;
+}
+
+ #myFormGENE {
+    display: flex; 
+
+}
+
+#removeBtn{
+    vertical-align:top;
+   
+}
+
+#errorSpanGENE{
+    padding:5px;
+    margin-left:10px;
+    
+}
+
+#errorSpanGENE.ui-state-error {
+
+    border: 1px solid #eedfdf;
+}
+
+fieldset{
+    border-color: #34bb34;
+
+}
+
+.ui-widget-content form button.ui-state-default{
+ 
+ 
+    background: #c2f6c2;
+ }
+
+form button  {
+    text-align: left;
+    width:110px;
+  
+}
+
+input.radioGeneTop[type="radio"]{ 
+  position:absolute;
+}
+
+
+
+
+
+.ui-widget-content .ui-state-active.radioTopLabel   {
+    border: 1px solid #d3d3d3 ;
+    background:none;
+    color: #555555 ;
+}
+
+
+#rangeGENE{
+
+    color:#f6931f; 
+    font-weight:bold; 
+    font-size:13px;
+    font-family: arial, sans-serif;
+    margin:0; padding:4px
+
+}
+
+
+/*flex row*/
+
+
+ 
+.container{
+
+  display:flex;
+  justify-content: space-around;
+   align-items: center; 
+
+}
+
+
+
+#adduserTooltipShowerGene, #finduserTooltipShowerGene{
+
+   
+    text-align: center;
+    line-height: 30px;
+    font-family: sans-serif;
+    cursor: pointer;
+}
+
+#adduserTooltipShowerGene{
+    border-radius: 60px;
+    background-color: #639263;
+    font-size: 19px;
+    color: #f9eeee;
+    width: 30px;
+}
+
+#finduserTooltipShowerGene{
+    border-radius: 0;
+    background-color: #f8f8f8;
+    width: 40px;
+    color: #639263;
+    border: solid 1px #aca8a8;
+    font-size: large;
+   
+}
+
+.tooltip_content { display: none; }
+
+
+.tooltipShower{
+   display: inline-block; 
+   margin-right:20px;
+}
+
+/*ADD USER FORM*/
+
+#addUserFormContainerGene label, #addUserFormContainerGene  input, #addUserFormContainerGene select {
+    /* in order to define widths */
+    display: inline-block;
+}
+
+#addUserFormContainerGene label {
+    width: 23%;
+    /* positions the label text beside the input */
+    text-align: right;
+}
+
+#addUserFormContainerGene label + input {
+    width: 62%;
+    /* large margin-right to force the next element to the new-line
+       and margin-left to create a gutter between the label and input */
+    margin: 0 0 10px 4%;
+}
+#addUserFormContainerGene select{
+   width: 23%;
+   margin: 0 0 10px 4%;
+   font-size: smaller;
+   
+   font-weight:normal;
+}
+ #addNewPatientBtnGene{
+    margin-right:34px;
+    float:right;
+    background: #c2f6c2;
+
+    text-align: center;
+    width:110px;
+
+}
+
+
+#addUserFormContainerGene i{
+  font-size:12px;
+  font-weight:normal;
+}
+#addUserFormContainerGene h3{
+  color: #f5f5f5;
+ margin: 20px 0 5px 50px;
+}
+
+#addUserFormContainerGene p{
+  color: red;
+  margin:0 0 5px 50px;
+  height:20px;
+}
+
+#addAgeFieldDDGene,#addAgeFieldYYYYGene{
+  
+    margin: 0 0 0 2%;
+}
+
+#addAgeFieldYYYYGene{
+    width: 10%;
+   
+}
+
+#addAgeFieldDDGene{
+    width: 9%;
+   
+}
+
+
+#addUserFormContainerGene{
+   clear: both;
+}
+
+.sameHeightAge{
+  
+    font-size:smaller;
+   
+    font-family: sans-serif;
+    
+}
+
+
+.sameHeightAge input, .sameHeightAge select{   
+    font-size: inherit;
+    padding: 0.7%;
+    height:20px;
+    -moz-box-sizing: content-box;
+    -webkit-box-sizing: content-box;
+    box-sizing: content-box;
+}
+
+
+.tableHeader{
+    color:white;
+    background-color: #649f64;
+}
+
+.tableRow{
+    color:black;
+}
+
+.oddRow{
+    color:black;
+    background-color: #e2ffe2;
+}
+
+.headerCell {
+    background-image: none;
+
+}
+
+.headerCell span{
+    color: #b73d3d;
+
+}
+
+#buttonHolder button{
+    display:inline-block;
+}
+
+#buttonHolder{
+    margin-bottom:10px;
+}
+
+#tableMessage{
+    height: 18px; 
+    margin-bottom: 5px;
+   
+}
+
+#nameForFindInput {
+    margin-left: 20px;
+    vertical-align: middle;    
+}
+
+
+/*links section*/
+
+#tabs .ui-tabs-nav { 
+    float:left;
+    border-left: none; 
+    -moz-border-radius: 0px 6px 6px 0px; 
+    -webkit-border-radius: 0px 6px 6px 0px; 
+    border-radius: 0px 6px 6px 0px; 
+} 
+#tabs #linksSection{ 
+    float: right;
+    height: 2.6em; 
+   
+    
+    -moz-border-radius: 6px; 
+    -webkit-border-radius: 6px; 
+    border-radius: 6px; 
+    position:relative;
+    width: 42%;
+    
+    
+    
+/*random addition*/
+/*    float:right;
+    margin-right:50px;
+    display: table-cell;
+    vertical-align: middle;
+    margin-left:20px;*/
+    
+    
+        
+}
+
+.imageButton, .imageButton:hover{
+  
+  background-size: 100%;
+  position: absolute;
+  bottom:   0;
+  top:0;
+  padding:3px;
+  background-origin: content-box;
+  background-repeat: no-repeat;
+  margin:auto;
+  outline: none; 
+  cursor: pointer;
+
+}
+
+#topRow{
+   background: #ece8da url(//code.jquery.com/ui/1.8.23/themes/south-street/images/ui-bg_gloss-wave_100_ece8da_500x100.png) repeat-x scroll 50% 50%; 
+   overflow:hidden;
+}
+
+#fitbitLink{
+   background-image: url("//i.imgur.com/j5M5iEU.png");
+   width:112px;
+   height:33px;
+   left: 0;
+}
+
+#formLink{
+  background-image: url("//i.imgur.com/vpJNUae.png");
+  width:40px;
+  height:33px;
+  left: 140px;
+  min-width:40px;
+}
+
+#myFormGENE input[type=file]{
+    width:200px;
+
+}
+
+/*dygraph*/
+.dygraph-axis-label-x {
+     -webkit-transform: rotate(-90deg); 
+     -moz-transform: rotate(-90deg);
+     transform: rotate(-90deg);
+     
+     margin: 40px 0 10px 25px;
+     font-size: 13px;
+     
+}
+
+
+#tabs-2{
+    margin-bottom:60px;
+
+}
+
+.dygraph-title:after{
+    content:" (double click to unzoom)";
+    font-size:10px;
+    font-weight:normal;
+}
+
+.dygraph-ylabel{
+    top: -17px;
+    left: 200px;
+    position: absolute;
+    font-size: small;
+
+}
+
+button.ui-datepicker-close {display: none;}
+
+
+
+/*logging out*/
+
+#logout{
+    background-image: url("//i.imgur.com/93DStFm.png");
+    width:29px;
+    height:33px;
+    min-width:29px;/*override*/
+    text-align: center;
+    line-height: 30px;
+    font-family: sans-serif;
+    cursor: pointer;
+    left: 208px;
+}
+
+#logoutFrame{
+   clear: both;
+}
+
+#logoutFrame button{
+    float:right;
+}
+
+#logoutFrame p{
+    font-size: medium;
+    padding: 12px;
+    margin: 0;
+    background: #565656;
+    color: white;
+    font-weight: bold;
+    font-family: serif;
+}
+
+#logoutFrame button:hover {
+    background: #198d98;
+}
+
+#logoutFrame button {
+    float:right;
+    background: #1dabb8;
+    border-radius: 3px;
+    color: #fff;
+    float: right;
+    font-weight: bold;
+    padding: 4px 20px;
+    
+    
+    outline: none;
+
+    border: none;
+    font-family: serif;
+    font-size: medium;
+   
+    -webkit-appearance: none;
+    box-sizing: border-box;
+    cursor: pointer;
+    margin: 4px;
+    line-height:normal;
+    height:auto;
+}
+
+.specialTooltipster.tooltipster-sidetip .tooltipster-content {
+    padding:0 !important;
+}
+
+
+.specialTooltipster.tooltipster-sidetip .tooltipster-box {
+    background: white ;
+    border: 2px solid #000 ;
+    border-radius: 4px ;
+    display:inline-block;
+}
+.specialTooltipster{
+    height:auto !important;
+}
+
+
+
+
+
+
+
+
+
+
+
