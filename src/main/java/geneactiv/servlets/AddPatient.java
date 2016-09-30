@@ -1,4 +1,4 @@
-package visitForm.servlets;
+package geneactiv.servlets;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -6,7 +6,7 @@ package visitForm.servlets;
  * and open the template in the editor.
  */
 
-import visitForm.models.User;
+import geneactiv.models.User;
 import java.io.IOException;
 
 import javax.servlet.ServletException;
@@ -27,7 +27,7 @@ import java.util.ArrayList;
 
 
 import com.google.gson.Gson;
-import visitForm.models.Patient;
+import geneactiv.models.Patient;
 import java.io.PrintWriter;
 /**
  *

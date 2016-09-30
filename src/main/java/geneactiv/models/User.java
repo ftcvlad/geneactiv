@@ -1,4 +1,4 @@
-package visitForm.models;
+package geneactiv.models;
 
 /*
  * To change this license header, choose License Headers in Project Properties.

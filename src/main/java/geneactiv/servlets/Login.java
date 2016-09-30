@@ -1,6 +1,6 @@
-package visitForm.servlets;
+package geneactiv.servlets;
 
-import visitForm.models.User;
+import geneactiv.models.User;
 import java.io.IOException;
 
 import javax.servlet.ServletException;

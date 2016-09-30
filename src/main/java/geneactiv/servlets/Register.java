@@ -3,9 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package visitForm.servlets;
+package geneactiv.servlets;
 
-import visitForm.models.User;
+import geneactiv.models.User;
 
 import java.io.IOException;
 import java.io.PrintWriter;

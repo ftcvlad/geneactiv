@@ -1,4 +1,4 @@
-package visitForm.filters;
+package geneactiv.filters;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
