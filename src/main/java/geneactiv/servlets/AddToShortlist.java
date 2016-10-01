@@ -58,11 +58,12 @@ public class AddToShortlist extends HttpServlet {
         String json = request.getParameter("patients");
      
         
-        ArrayList<Patient> selectedPatientsForEnlist = new Gson().fromJson(json, new TypeToken<ArrayList<Patient>>(){}.getType());
+        
         
       
-        //EXCEPTIONS? FROMGSON??
+
         try {
+            ArrayList<Patient> selectedPatientsForEnlist = new Gson().fromJson(json, new TypeToken<ArrayList<Patient>>(){}.getType());
             ArrayList<Patient> addedPatients = us.addNonRepeatingPatients(selectedPatientsForEnlist);//add to session
             
             for (Patient o : addedPatients){
@@ -85,9 +86,9 @@ public class AddToShortlist extends HttpServlet {
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 response.getWriter().write("Database error");
         }
-        catch(NumberFormatException  nfe){//if user changed value in <select>
+        catch(Exception  nfe){
              response.setStatus(400);
-             response.getWriter().write("Bad input");
+             response.getWriter().write("Bad input --shouldn't happen!");
         }
         finally{
                 if (conn != null){

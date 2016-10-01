@@ -767,7 +767,7 @@ function readSingleFile() {
         google.script.run
             .withSuccessHandler(dbGetSucceed)
             .withFailureHandler(dbGetFail)
-            .getFromDB({allDates: allSelDates.sort(), id:id.substring(3), intraday: $('input[name=interIntraGene]:checked').val()==="en"?true:false});
+            .getFromDB({allDates: allSelDates.sort(), id:id, intraday: $('input[name=interIntraGene]:checked').val()==="en"?true:false});
             
             
     }
@@ -1082,13 +1082,15 @@ function processCsvString(allArrayData, selDates, retrieveType, id) {
    
         appsScriptLocked  = true;
         
-        google.script.run
-            .withSuccessHandler(dbSaveSucceed)
-            .withUserObject({selectedData: selectedData, frq:targetFrequency})
-            .withFailureHandler(dbSaveFailed)
-            .saveToDB({selectedData: selectedData, id:id.substring(3) });
-    
-    
+        $.post("saveDates",{data:JSON.stringify(selectedData ),id:id},function(response){
+            
+            dbSaveSucceed(response,selectedData,targetFrequency );
+        })
+        .fail(function(jqXHR, textStatus, errorThrown ) {
+           
+            dbSaveFailed(jqXHR.responseText);
+        });
+        
     }
 
    
@@ -1096,23 +1098,23 @@ function processCsvString(allArrayData, selDates, retrieveType, id) {
 
 
 
-
+//SUCCEED AND FAILED SUCK ????!!!!
 function dbSaveFailed(error){
-     setStatus($("#errorSpanGENE"), error.message, "ui-state-error");
+     setStatus($("#errorSpanGENE"), error, "ui-state-error");
      
-     var sliderDiv = $("#slider_divGENE");
-     if (sliderDiv.hasClass("ui-slider")) {//if initialized
-         sliderDiv.slider("destroy");
-     }
-     else if (sliderDiv.children().length > 0){//if dygraph
-     
-         sliderDiv.html('');
-     }
-        
-     $("#line_chart_divGENE").html('');
-     $("#rangeGENE").text('');
-     
-     appsScriptLocked = false;
+//     var sliderDiv = $("#slider_divGENE");
+//     if (sliderDiv.hasClass("ui-slider")) {//if initialized
+//         sliderDiv.slider("destroy");
+//     }
+//     else if (sliderDiv.children().length > 0){//if dygraph
+//     
+//         sliderDiv.html('');
+//     }
+//        
+//     $("#line_chart_divGENE").html('');
+//     $("#rangeGENE").text('');
+//     
+//     appsScriptLocked = false;
      
 }
 
@@ -1120,33 +1122,33 @@ function dbSaveSucceed(response, obj){
 
      //add dates saved to DB
             
-    var currFilling =  $('#userIDselect option[value="id_'+response.id+'"]').data("foo");
-            
-            
-   // from current filling delete dates that may have changed status (can be only  "part") 
-    var allChangedDates = response.changeFilling["part"].concat(response.changeFilling["full"]);
-            
-    for (var i=0;i<currFilling["part"].length;i++){
-         if (allChangedDates.indexOf(currFilling["part"][i])!==-1){
-            currFilling["part"].splice(i,1);
-            i--;
-         }
-    } 
-            
-            //append new dates
-    for (i in response.changeFilling){
-         if (!response.changeFilling.hasOwnProperty(i)){continue};
-            
-         currFilling[i] = currFilling[i].concat(response.changeFilling[i]);
-    }
-            
-    
+//    var currFilling =  $('#userIDselect option[value="'+response.id+'"]').data("foo");
+//            
+//            
+//   // from current filling delete dates that may have changed status (can be only  "part") 
+//    var allChangedDates = response.changeFilling["part"].concat(response.changeFilling["full"]);
+//            
+//    for (var i=0;i<currFilling["part"].length;i++){
+//         if (allChangedDates.indexOf(currFilling["part"][i])!==-1){
+//            currFilling["part"].splice(i,1);
+//            i--;
+//         }
+//    } 
+//            
+//            //append new dates
+//    for (i in response.changeFilling){
+//         if (!response.changeFilling.hasOwnProperty(i)){continue};
+//            
+//         currFilling[i] = currFilling[i].concat(response.changeFilling[i]);
+//    }
+//            
+//    
+//
+//    var errorSpanGene = $("#errorSpanGENE");
+//    setStatus(errorSpanGene, "Drawing graph...", "ui-state-highlight");
+//    drawGraph($("#graphTypeGene").val(), "Geneactiv", 'line_chart_divGENE', 'slider_divGENE', 'rangeGENE', obj.selectedData, obj.frq);
 
-    var errorSpanGene = $("#errorSpanGENE");
-    setStatus(errorSpanGene, "Drawing graph...", "ui-state-highlight");
-    drawGraph($("#graphTypeGene").val(), "Geneactiv", 'line_chart_divGENE', 'slider_divGENE', 'rangeGENE', obj.selectedData, obj.frq);
-
-    setStatus(errorSpanGene, "Data saved", "ui-state-highlight");
+    setStatus($("#errorSpanGENE"), "Data saved", "ui-state-highlight");
 
 
     appsScriptLocked = false;
