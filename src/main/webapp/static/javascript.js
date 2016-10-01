@@ -12,12 +12,12 @@ $(function () {
                data.addColumn('string', 'Name');
                data.addColumn('string', 'Surname');
                data.addColumn('string', 'Birth date');
-               data.addColumn('string', 'id');
+               data.addColumn('number', 'id');
                data.addColumn('string', 'fillings');
                               
                var table = new google.visualization.Table(document.getElementById('tableHolderGene'));
                
-               $("#listDbUsersBtn").click(function(){findSavedUsers(table, data);});
+               $("#listDbUsersBtn").click(function(){findSavedPatients(table, data);});
                $("#totalDeleteBtn").click(function(){deleteSelectedUser(table, data); });
                $("#addToShortlistBtn").click(function(){addToShortlist(table, data);});
 
@@ -524,99 +524,97 @@ function addNewPatient(){
 
 //FIND USERS
 
-function findSavedUsers(table, datatable){
- $("#totalDeleteBtn").prop("disabled",true);
- $("#addToShortlistBtn").prop("disabled",true);
+function findSavedPatients(table, datatable){
+        $("#totalDeleteBtn").prop("disabled",true);
+        $("#addToShortlistBtn").prop("disabled",true);
 
 
 
- $("#tableMessage").text("Retrieving patient list...");
-  google.script.run
-            .withSuccessHandler(updateTable)
-            .withFailureHandler(updateTableFail)
-            .withUserObject({table:table, datatable: datatable})
-            .findSavedUsers($("#nameForFindInput").val());
-}
+        $("#tableMessage").text("Retrieving patient list...");
 
-function updateTableFail(error){
-    $("#tableMessage").text(error.message);
 
-}
+        $.get("findPatients",{name:$("#nameForFindInput").val()}, function(response){
+               datatable.removeRows(0,  datatable.getNumberOfRows());
 
-function updateTable(response, args){
-              
-               args.datatable.removeRows(0,  args.datatable.getNumberOfRows());
-               
                for (var i=0;i<response.length;i++){
-                    args.datatable.addRow([response[i].name, response[i].surname, response[i].birth,response[i].PCpair_id, JSON.stringify(response[i].fillings)] ); 
+                 
+                    datatable.addRow([response[i].name, response[i].surname, response[i].birthDate,response[i].id, 
+                            JSON.stringify({fullDates:response[i].fullDates,  partDates:response[i].partDates})] ); 
                }
-               
-                var view = new google.visualization.DataView(args.datatable);
-                view.setColumns([0,1,2]); //here you set the columns you want to display
-               
-              
-               args.table.draw(view, {width: '100%',  cssClassNames:{headerRow : "tableHeader", tableRow: "tableRow", oddTableRow: "oddRow", headerCell  :"headerCell" }});
 
-             
+                var view = new google.visualization.DataView(datatable);
+                view.setColumns([0,1,2]); //here you set the columns you want to display
+
+
+               table.draw(view, {width: '100%',  cssClassNames:{headerRow : "tableHeader", tableRow: "tableRow", oddTableRow: "oddRow", headerCell  :"headerCell" }});
+
+
                $("#tableMessage").text("Done");
+        },"json")
+        .fail(function(jqXHR, errorStatus, errorThrown){
+              $("#tableMessage").text(jqXHR.responseText);
+        });
+ 
+      
+            
 }
+
+
+
+
 
 
 //DELETE USER
 
 function deleteSelectedUser(table, datatable){
 
-      $("#tableMessage").text("Deleting selected users...");
-      var allUserIds = [];
-      
-      var allSelected =  table.getSelection();
-      for (var i=0; i<allSelected.length; i++){
-              
-              allUserIds.push(datatable.getValue(allSelected[i].row,3));
-            
-      }
+        $("#tableMessage").text("Deleting selected users...");
+        var allUserIds = [];
+
+        var allSelected =  table.getSelection();
+        for (var i=0; i<allSelected.length; i++){
+           
+            allUserIds.push(datatable.getValue(allSelected[i].row,3));
+        }
+    
+        $.post("deletePatients",{idArray:JSON.stringify(allUserIds)}, function(){
+                updateTableListRemove(allUserIds,datatable,table);
+        })
+       .fail(function(jqXHR, errorStatus, errorThrown){
+             $("#tableMessage").text(jqXHR.responseText);
+        });
      
-     
-      google.script.run
-            .withSuccessHandler(updateListsRemove)
-            .withFailureHandler(deleteUserFail)
-            .withUserObject({datatable:datatable, table:table})
-            .removeFromDb(allUserIds);
+ 
 }
 
-function deleteUserFail(error){
-      $("#tableMessage").text(error.message);
-}
 
-function updateListsRemove(idsToRemove, args){
+function updateTableListRemove(idsToRemove, datatable, table){
 
     if (idsToRemove.length>0){
         for (var i=0;i<idsToRemove.length;i++){
-            $('#userIDselect').find('option[value="id_'+idsToRemove[i]+'"]').remove(); 
+            $('#userIDselect').find('option[value="'+idsToRemove[i]+'"]').remove(); 
         }
         $("#userIDselect").selectmenu("destroy").selectmenu({width:150});
        
-        if (args!==undefined){//removed in userDelete and delist(args==undefined)
+        
+        for (var j=0; j< datatable.getNumberOfRows();j++){
+            var nextId = datatable.getValue(j,3);
+            if (idsToRemove.indexOf(nextId)>=0){
+                datatable.removeRow(j);
+                j--;
+            }
 
-
-               for (var j=0; j< args.datatable.getNumberOfRows();j++){
-                   var nextId = args.datatable.getValue(j,3);
-                   if (idsToRemove.indexOf(nextId)>=0){
-                       args.datatable.removeRow(j);
-                       j--;
-                   }
-               
-               }
-
-                var view = new google.visualization.DataView(args.datatable);
-                view.setColumns([0,1,2]); 
-               
-             
-               args.table.draw(view, {width: '100%',  cssClassNames:{headerRow : "tableHeader", tableRow: "tableRow", oddTableRow: "oddRow" }});
-               
-               $("#totalDeleteBtn").prop("disabled",true);
-               $("#addToShortlistBtn").prop("disabled",true);
         }
+
+         var view = new google.visualization.DataView(datatable);
+         view.setColumns([0,1,2]); 
+
+
+        table.draw(view, {width: '100%',  cssClassNames:{headerRow : "tableHeader", tableRow: "tableRow", oddTableRow: "oddRow" }});
+
+        $("#totalDeleteBtn").prop("disabled",true);
+        $("#addToShortlistBtn").prop("disabled",true);
+        
 
     }
     $("#tableMessage").text("Done"); 
@@ -627,16 +625,24 @@ function updateListsRemove(idsToRemove, args){
 function removeFromShortList(){
 
      var id = $("#userIDselect").val();
+     var errorSpanGene = $("#errorSpanGENE");
      if (id===null){
-          var errorSpanFit = $("#errorSpanFit");
-          setStatus(errorSpanFit, "No id to remove!", "ui-state-error");  
+          setStatus(errorSpanGene, "No id to remove!", "ui-state-error");  
      }
      else{
-          google.script.run
-                .withSuccessHandler(updateListsRemove)
-                .removeFromShortList(id);
+         
+        $.post("removeFromShortlist",{id:id}, function(){
+                
+                $('#userIDselect').find('option[value="'+id+'"]').remove(); 
+                $("#userIDselect").selectmenu("destroy").selectmenu({width:150});
+                                
+                errorSpanGene.text("Done");
+                
+        })
+       .fail(function(jqXHR, errorStatus, errorThrown){
+             errorSpanGene.text(jqXHR.responseText);
+        });       
      }
-
 }
 
 
@@ -650,34 +656,43 @@ function addToShortlist(table, datatable){
       var allSelected =  table.getSelection();
       for (var i=0; i<allSelected.length; i++){
               
-              var row = allSelected[i].row;
-              
-              var id = datatable.getValue(row,3);
-              var name = datatable.getValue(row,0);
-              var surname = datatable.getValue(row,1);
-              var fillings = datatable.getValue(row,4);
-            
-              allUsers.push({id: id, name: name,surname:surname, fillings: fillings  });
-            
+            var row = allSelected[i].row;
+
+            var id = datatable.getValue(row,3);
+            var name = datatable.getValue(row,0);
+            var surname = datatable.getValue(row,1);
+            var birthDate = datatable.getValue(row,2);
+            var fillings = datatable.getValue(row,4);
+
+            var dates = JSON.parse(fillings);
+            allUsers.push({id: id, name: name,surname:surname, birthDate:birthDate,fullDates: dates.fullDates, partDates: dates.partDates  });
+
       }
      
+        $.post("addToShortlist",{patients:JSON.stringify(allUsers)}, function(patientsToAdd){
+                
+               updateSelectEnlist(patientsToAdd);
+                
+        })
+       .fail(function(jqXHR, errorStatus, errorThrown){
+              $("#tableMessage").text(jqXHR.responseText);
+        });    
      
-      google.script.run
-            .withSuccessHandler(updateListsAdd)
-            .addToShortList(allUsers);
+  
+  
 }
 
 
-function updateListsAdd(usersToAdd){
+function updateSelectEnlist(patientsToAdd){
     
-    if (usersToAdd.length>0){
+    if (patientsToAdd.length>0){
     
-        $.each(usersToAdd, function (i, item) {
+        $.each(patientsToAdd, function (i, nextPatient) {
         
             $('#userIDselect').prepend($('<option>', { 
-                    value: "id_"+item.id,
-                    text : item.name+" "+item.surname,
-                    "data-foo" :  item.fillings,
+                    value: nextPatient.id,
+                    text : nextPatient.name+" "+nextPatient.surname,
+                    "data-foo" :  JSON.stringify({"full":nextPatient.fullDates, "part":nextPatient.partDates}),
                     selected: "selected"
                 }));
         });

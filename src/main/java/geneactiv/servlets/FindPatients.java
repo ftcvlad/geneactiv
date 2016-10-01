@@ -1,11 +1,17 @@
-package geneactiv.servlets;
-
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+package geneactiv.servlets;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import geneactiv.models.User;
 import java.io.IOException;
 
@@ -24,17 +30,21 @@ import javax.naming.NamingException;
 import javax.naming.InitialContext;
 import java.util.ArrayList;
 
-import geneactiv.models.PatientManager;
+
 
 import com.google.gson.Gson;
 import geneactiv.models.Patient;
 import java.io.PrintWriter;
+import geneactiv.models.PatientManager;
+
 /**
  *
  * @author Vlad
  */
-@WebServlet(urlPatterns = {"/addPatient"})
-public class AddPatient extends HttpServlet {
+@WebServlet(name = "FindPatients", urlPatterns = {"/findPatients"})
+public class FindPatients extends HttpServlet {
+
+
 
     private DataSource dataSource;
     
@@ -49,38 +59,12 @@ public class AddPatient extends HttpServlet {
     }
     
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
        
        
-        //creates empty lists as well
-        Patient patient  = new Gson().fromJson(request.getParameter("data"), Patient.class);
-
-       
         
-        patient.setName(patient.getName().trim());
-        patient.setSurname(patient.getSurname().trim());
-
-     
-       
-        if (patient.getBirthDate()!=null){
-            String[] parts = patient.getBirthDate().split("-");
-            if (parts.length==3){
-                String dayStr = parts[2];
-                String yearStr = parts[0];
-                String monthStr = parts[1];
-
-                dayStr = (dayStr.length()==1) ? ("0"+dayStr): dayStr;
-                monthStr = (monthStr.length()==1) ? ("0"+monthStr): monthStr;
-                patient.setBirthDate(yearStr+"-"+monthStr+"-"+dayStr);
-            }
-        }
-        
-        
-        if (patient.getName().equals("") && patient.getSurname().equals("")){
-              patient.setName("noname");
-        }
-        
+        String nameToFind = request.getParameter("name");
         
         
         Connection conn = null ;
@@ -93,17 +77,18 @@ public class AddPatient extends HttpServlet {
         try {
 
             conn= dataSource.getConnection();
-            PatientManager pm = new PatientManager();
-            pm.savePatient(activeUserEmail, patient,conn);
-           
+         
             
-            us.allPatients.add(patient);
+            PatientManager pm =new PatientManager();
+            ArrayList<Patient> allPatients = pm.findPatientsAndDates(nameToFind,activeUserEmail,conn);
             
+            //Gson gson = new com.google.gson.GsonBuilder().setPrettyPrinting().create();
+            //System.out.println(jsonResponse);
+            String jsonResponse  = new Gson().toJson(allPatients);
+
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
-            
-            String alias = patient.getName()+" "+patient.getSurname();
-            response.getWriter().print("{\"id\":"+patient.getId()+",\"alias\":\""+ alias+"\"}");
+            response.getWriter().print(jsonResponse);
            
            
 
@@ -113,10 +98,6 @@ public class AddPatient extends HttpServlet {
             
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 response.getWriter().write("Database error");
-        }
-        catch (Exception e){
-                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                response.getWriter().write("Strange exception");
         }
         finally{
                 if (conn != null){
@@ -131,3 +112,6 @@ public class AddPatient extends HttpServlet {
 
 
 }
+
+
+

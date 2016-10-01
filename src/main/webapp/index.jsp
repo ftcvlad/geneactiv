@@ -6,10 +6,11 @@
    <head>
    
       <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+       <!-- This CSS package applies Google styling; it should always be included. ???????-->
+      <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons.css">
       <link rel="stylesheet" type="text/css" href="static/style.css">
       
-      <!-- This CSS package applies Google styling; it should always be included. ???????-->
-      <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons.css">
+     
       
       <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
      

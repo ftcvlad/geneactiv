@@ -1,6 +1,7 @@
 package geneactiv.servlets;
 
 import geneactiv.models.User;
+import geneactiv.models.PatientManager;
 import java.io.IOException;
 
 import javax.servlet.ServletException;
@@ -73,8 +74,10 @@ public class Login extends HttpServlet {
                
                 if (isValid){
                     us.setUsername(username);
-                    us.addShortlistedPatientsAndDates(username,conn);
-                    
+                   
+                    PatientManager pm = new PatientManager();
+                    us.setAllPatients(pm.getShortlistedPatientsAndDates(username,conn));
+                   
                     request.getSession().setAttribute("user", us);
 
                     response.sendRedirect(request.getContextPath());

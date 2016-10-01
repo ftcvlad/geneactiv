@@ -90,23 +90,15 @@ public class Patient {
     }
     
     
-    public void save(String activeUserEmail, Connection conn) throws SQLException{
-      
-          PreparedStatement stmt = conn.prepareStatement("INSERT INTO patients( Clinician, birthDate, name, surname,shortlisted)"+
-                                           " VALUES (?,?,?,?,1);", 1);
-                                                                   
-          stmt.setString(1, activeUserEmail);      
-          stmt.setString(2, this.birthDate);    
-          stmt.setString(3, this.name);  
-          stmt.setString(4, this.surname); 
-      
-          stmt.execute();
-          
-           
-          ResultSet  rs = stmt.getGeneratedKeys();
-          rs.next();
-            
-          id= rs.getInt(1);//last_inserted_id 
-          
+    
+    @Override
+    public boolean equals(Object c) {
+        if (!(c instanceof Patient)) {
+            return false;
+        }
+
+        Patient that = (Patient)c;
+        return this.id == that.id;
     }
+    
 }

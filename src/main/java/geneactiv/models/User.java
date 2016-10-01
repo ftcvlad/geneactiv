@@ -24,9 +24,13 @@ import java.util.ArrayList;
 public class User {
    
     String username;
-    public ArrayList<Patient> allPatients = new ArrayList<Patient>();
+    public ArrayList<Patient> allPatients;
     public User(){
         
+    }
+    
+    public void setAllPatients(ArrayList<Patient> pat){
+        allPatients = pat;
     }
     
     public void setUsername(String username){
@@ -71,62 +75,46 @@ public class User {
         stmt.setString(2,password );
         stmt.executeUpdate();
     }
-    
 
-    
-    
-    public void addShortlistedPatientsAndDates(String username, Connection conn) throws SQLException{
-        
- 
-        PreparedStatement stmt = conn.prepareStatement("SELECT dates.Date,dates.filling,patients.PCpair_id, patients.name, patients.surname"+
-                                            " FROM dates"+
-                                            " RIGHT JOIN patients ON (dates.PCpair_id=patients.PCpair_id)"+
-                                            " WHERE patients.Clinician=? AND patients.shortlisted=1"+
-                                            " ORDER BY 3 ;",ResultSet.TYPE_SCROLL_INSENSITIVE,ResultSet.CONCUR_READ_ONLY);
-         
-        stmt.setString(1,username);
-        ResultSet rs = stmt.executeQuery();
-        
-   
-        int previousUserId =0;  
-        Patient nextPatient = new Patient();  
-        while(rs.next()){
-             
-                String date = rs.getString(1);
-                String filling = rs.getString(2);
-                int PCpair_id = rs.getInt(3);
-               
-                if (rs.isFirst()){
-                   previousUserId = PCpair_id;
-                }
-
-                if (PCpair_id !=  previousUserId  ){//1ST PUT PATIENT CASE
-
-                    nextPatient.setId(previousUserId);
-                    rs.previous();
-                    nextPatient.setName(rs.getString(4));
-                    nextPatient.setSurname(rs.getString(5));
-                    rs.next();
-
-                    allPatients.add(nextPatient);
-
-                    nextPatient = new Patient();
-                    previousUserId = PCpair_id;
-
-                }
-
-                if (filling!=null){//for NULL, NULL, userID, name, surname rows -- no dates in dates table
-                    nextPatient.addDate(date,filling);
-                }
-
-                if (rs.isLast()){//2nd PUT PATIENT CASE
-                   nextPatient.setId(PCpair_id);
-                   nextPatient.setName(rs.getString(4));
-                   nextPatient.setSurname(rs.getString(5));
-                   allPatients.add(nextPatient);
-                }
-              
-
-         }
+    public void removePatientById(int id){
+        for (int i=0;i<allPatients.size();i++){
+            if (allPatients.get(i).getId() == id){
+                    allPatients.remove(i);
+                    break;
+            }
+        }   
     }
+    
+    public void removePatientById(String[] ids) throws NumberFormatException{
+        
+        
+        for (String nextId: ids){
+          
+            for (int i = allPatients.size()-1; i >= 0; i--){
+                    if (allPatients.get(i).getId() == Integer.parseInt(nextId)){
+                        allPatients.remove(i);
+                        break;
+                    }
+            }
+        }
+    }
+    
+    
+     public ArrayList<Patient> addNonRepeatingPatients(ArrayList<Patient> selectedPatients){
+         
+         ArrayList<Patient> addedPatients = new ArrayList<>();
+         for (Patient nextPatient: selectedPatients){
+               if (!allPatients.contains(nextPatient)){
+                   allPatients.add(nextPatient);
+                   addedPatients.add(nextPatient);
+               }
+         }
+       
+         return addedPatients;
+         
+     }
+    
+    
 }
+
+
