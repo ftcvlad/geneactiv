@@ -43,20 +43,6 @@ $(function () {
 
 
 
-
-//      $("#errorSpanGENE").text("Marking dates...");
-      
-      
-//      //MARK DATES
-//      $.get("markDates",function(dataArray){
-//            for (var i=0;i<dataArray.length;i++){
-//                $('#userIDselect option[value="'+dataArray[i].id+'"]').data("foo",dataArray[i].data);
-//            }
-//            $("#errorSpanGENE").text("Ready");  
-//      })
-//      .fail(function(jqXHR, errorStatus, errorThrown){
-//            setStatus($("#errorSpanGENE"), errorThrown, "ui-state-error");
-//      });
           
       
 
@@ -365,6 +351,10 @@ function handleRadioChange(radioClicked) {
 
 }
 
+
+
+//SOME DISABLING/ENABLING
+
 function intraInterChangeGene(radioClicked) {
 
     var value = $(radioClicked).val();
@@ -378,6 +368,8 @@ function intraInterChangeGene(radioClicked) {
          $("#frqGENE").selectmenu("enable");
          $("#frqGENE").selectmenu("refresh");
         
+         $("#graphTypeGene option").not(':eq(0)').attr("disabled", false);
+         $("#graphTypeGene").selectmenu("refresh");
     }
     else if (value === "dis") {
         
@@ -393,8 +385,16 @@ function intraInterChangeGene(radioClicked) {
         $("#radioButtonSetGene").buttonset("refresh");
         
       
+        //frequency
         $("#frqGENE").selectmenu("disable");
         $("#frqGENE").selectmenu("refresh");
+        
+        
+         
+         //graph type
+        $("#graphTypeGene option").not(':eq(0)').attr("disabled", true);
+        $('#graphTypeGene').val('LC');
+        $("#graphTypeGene").selectmenu("refresh");
     }
 
 }
@@ -764,11 +764,16 @@ function readSingleFile() {
         
         appsScriptLocked = true;
         
-        google.script.run
-            .withSuccessHandler(dbGetSucceed)
-            .withFailureHandler(dbGetFail)
-            .getFromDB({allDates: allSelDates.sort(), id:id, intraday: $('input[name=interIntraGene]:checked').val()==="en"?true:false});
-            
+        var intraday = $('input[name=interIntraGene]:checked').val()==="en"?true:false;
+        $.get("getDates",{allDates: JSON.stringify(allSelDates.sort()), id:id, intraday:intraday },function(response){
+              dbGetSucceed(response,intraday);
+        },"json")
+        .fail(function(jqXHR, errorStatus, errorThrown){
+                setStatus($("#errorSpanGENE"), jqXHR.responseText, "ui-state-error");
+                clearChartSliderAreaAndGetMemoryBack();
+                appsScriptLocked = false;
+        });
+      
             
     }
     else if (retrieveType==="file" || retrieveType==="fileSave"){
@@ -1052,7 +1057,10 @@ function processCsvString(allArrayData, selDates, retrieveType, id) {
 
 
     if (retrieveType==="file"){
-        //console.log(selectedData);
+        if (intraday===false){
+            targetFrequency = null;
+        }
+        
         setStatus(errorSpanGene, "Drawing graph...", "ui-state-highlight");
         drawGraph($("#graphTypeGene").val(), "Geneactiv", 'line_chart_divGENE', 'slider_divGENE', 'rangeGENE', selectedData, targetFrequency);
 
@@ -1097,14 +1105,14 @@ function processCsvString(allArrayData, selDates, retrieveType, id) {
 }
 
 
-function dbSaveSucceed(response, id, selectedData, frq){
+function dbSaveSucceed(response, id, selectedData, targetFrequency){
 
     //update data-foo
     $('#userIDselect option[value="'+id+'"]').data("foo",response );
     
     var errorSpanGene = $("#errorSpanGENE");
     setStatus(errorSpanGene, "Drawing graph...", "ui-state-highlight");
-    drawGraph($("#graphTypeGene").val(), "Geneactiv", 'line_chart_divGENE', 'slider_divGENE', 'rangeGENE', selectedData, frq);
+    drawGraph($("#graphTypeGene").val(), "Geneactiv", 'line_chart_divGENE', 'slider_divGENE', 'rangeGENE', selectedData, targetFrequency);
 
     setStatus($("#errorSpanGENE"), "Data saved", "ui-state-highlight");
 
@@ -1113,34 +1121,24 @@ function dbSaveSucceed(response, id, selectedData, frq){
 
 
 
-function dbGetFail(error){
-       var errorSpanGene = $("#errorSpanGENE");
-       var sliderDiv = $("#slider_divGENE");
-       if (sliderDiv.hasClass("ui-slider")) {//if initialized
-             sliderDiv.slider("destroy");
-       }
-       else if (sliderDiv.children().length > 0){//if dygraph
-       
-           sliderDiv.html('');
-       }
-         
-       $("#line_chart_divGENE").html('');
-       $("#rangeGENE").text('');
-       setStatus(errorSpanGene, error.message, "ui-state-error");
-       appsScriptLocked = false;
-}
 
 
 
-function dbGetSucceed(response){
+
+function dbGetSucceed(responseArray, intraday){
+    
+    //[[2016-06-09,2016-06-10]["12","14"]["234","1212"]...]  for intraday -> add time column + respective frequency + parseInt
+    //[[Date,Total steps][2016-06-09,"325876"][2016-06-10,"213111"]...] for interday -> parseInt
+    
     var errorSpanGene = $("#errorSpanGENE");
 
- 
-   if (response.intraday===true){
-          
+    
+    var frqSeconds;
+    if (intraday===true){
+        
         var genFrqData = [['Time']];
-        var frqMinutes = parseInt($("#frqGENE").val());
-        frqMinutes = (frqMinutes===-1) ? 1:(frqMinutes/60);
+        frqSeconds= parseInt($("#frqGENE").val());
+        var frqMinutes = (frqSeconds===-1) ? 1:(frqSeconds/60);
 
   //ADD TIME COLUMN
 
@@ -1160,34 +1158,33 @@ function dbGetSucceed(response){
             }
 
             var str = hh + ":" + mm;
-            str = str == "00:00" ? "24:00" : str;
+            str = str === "00:00" ? "24:00" : str;
 
 
             genFrqData.push([str]);
         }
 
-        console.log(genFrqData);
 
   //GENERATE SELECTED DATA
 
         var totalStepsForPeriod = null;
       
-        for (var i=0;i<response.table[0].length;i++){
+        for (var i=0;i<responseArray[0].length;i++){
         
-            genFrqData[0].push(response.table[0][i]);
+            genFrqData[0].push(responseArray[0][i]);
 
-            var dataAvailableLength = response.table.length;
+            var dataAvailableLength = responseArray.length;
             var itemsPushed = 0;
 
             for (j = 1; j < dataAvailableLength; j++) {
                 
-                if (response.table[j][i]!==null){
-                    totalStepsForPeriod += response.table[j][i];
+                if (responseArray[j][i]!==null){
+                    totalStepsForPeriod += parseInt(responseArray[j][i]);
                 }
 
 
-                if (j  % frqMinutes == 0 || j == (dataAvailableLength - 1)) {//add data every f hours or leftovers
-                console.log(itemsPushed+"  -  "+ genFrqData[itemsPushed + 1]);
+                if (j  % frqMinutes === 0 || j === (dataAvailableLength - 1)) {//add data every f hours or leftovers
+                //console.log(itemsPushed+"  -  "+ genFrqData[itemsPushed + 1]);
                     genFrqData[itemsPushed + 1].push(totalStepsForPeriod);
                     totalStepsForPeriod = null;
                     itemsPushed++;
@@ -1199,15 +1196,23 @@ function dbGetSucceed(response){
 
 
  
-        response.table = genFrqData;
-    
+        responseArray = genFrqData;
+       
     
     }
+    else if (intraday===false){
+            frqSeconds = null;//just a big number
+         
+            console.log(responseArray[0]);
+        for (var i=1;i<responseArray.length;i++){
+            responseArray[i][1] = parseInt(responseArray[i][1]);
+        }
+    }
     
-    console.log(response.table);
+    console.log(responseArray);
       
     setStatus(errorSpanGene, "Drawing graph...", "ui-state-highlight");
-    drawGraph($("#graphTypeGene").val(), "Geneactiv", 'line_chart_divGENE', 'slider_divGENE', 'rangeGENE', response.table,frqMinutes*60);
+    drawGraph($("#graphTypeGene").val(), "Geneactiv", 'line_chart_divGENE', 'slider_divGENE', 'rangeGENE', responseArray,frqSeconds);
 
    
 
@@ -1239,9 +1244,6 @@ var myHighchart = null;
 function drawGraph(chartType, chartTitle, chartId, sliderId, rangeId, selectedData, targetFrequencySec) {
 
 
-    if (targetFrequencySec===undefined){//this means it is interday and googleChart should be used
-        targetFrequencySec = 1234;
-    }    
     clearChartSliderAreaAndGetMemoryBack();
 
     
@@ -1253,7 +1255,7 @@ function drawGraph(chartType, chartTitle, chartId, sliderId, rangeId, selectedDa
   
     if (chartType === "LC" || chartType === "LS") {
     
-        if (targetFrequencySec>=60 ){//undefined for interday
+        if (targetFrequencySec===null || targetFrequencySec>=60 ){//null for interday
                 
                 var dataT = google.visualization.arrayToDataTable(selectedData);
                 var options = {
@@ -1427,10 +1429,10 @@ function drawGraph(chartType, chartTitle, chartId, sliderId, rangeId, selectedDa
     }
  
 
-    
+   
 
     
-    if (targetFrequencySec>=60 ||  chartType==="HL" || chartType==="HS"){
+    if (targetFrequencySec===null || targetFrequencySec>=60 ||  chartType==="HL" || chartType==="HS"){
 
 
           var sliderDiv = $("#" + sliderId);

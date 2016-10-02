@@ -5,10 +5,16 @@
  */
 package geneactiv.servlets;
 
+import com.google.gson.Gson;
+import geneactiv.models.DateManager;
+import geneactiv.models.Patient;
 import geneactiv.models.User;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.servlet.ServletException;
@@ -18,17 +24,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
-import com.google.gson.Gson;
-import geneactiv.models.DateManager;
-import geneactiv.models.Patient;
-import java.util.ArrayList;
-import java.util.HashMap;
+
 /**
  *
  * @author Vlad
  */
-@WebServlet(name = "SaveDates", urlPatterns = {"/saveDates"})
-public class SaveDates extends HttpServlet {
+@WebServlet(name = "GetDates", urlPatterns = {"/getDates"})
+public class GetDates extends HttpServlet {
+
     private DataSource dataSource;
     
     @Override
@@ -41,7 +44,7 @@ public class SaveDates extends HttpServlet {
     }
     
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
        
 
@@ -57,43 +60,14 @@ public class SaveDates extends HttpServlet {
             conn= dataSource.getConnection();
          
             int pcpair_id =  Integer.parseInt(request.getParameter("id"));
-            String[][] selectedData =  new Gson().fromJson(request.getParameter("data"), String[][].class);
+            String[] datesToGet =  new Gson().fromJson(request.getParameter("allDates"),String[].class);
+            boolean intraday = Boolean.parseBoolean(request.getParameter("intraday"));
+            
 
             DateManager dm = new DateManager();
-            HashMap<String, ArrayList<String>> hm = dm.saveDates(activeUserEmail,conn,pcpair_id,selectedData);
+            String [][] responseArray = dm.getDates(datesToGet, activeUserEmail, conn, pcpair_id,intraday);
             
-            Patient targetPatient = null;
-            for (int i=0; i<us.allPatients.size();i++){
-                if (us.allPatients.get(i).getId()==pcpair_id){
-                    targetPatient = us.allPatients.get(i);
-                    ArrayList<String> currentPartDates = targetPatient.getPartDates();
-                    ArrayList<String> addedPartDates = hm.get("part");
-                    
-                    ArrayList<String> currentFullDates =targetPatient.getFullDates();
-                    ArrayList<String> addedFullDates = hm.get("full");
-                    
-                    for (String str : addedPartDates){
-                        if (!currentPartDates.contains(str)){
-                           currentPartDates.add(str);
-                        }
-                    }
-                    
-                    for (String str : addedFullDates){
-                        if (!currentFullDates.contains(str)){
-                           currentFullDates.add(str);
-                        }
-                    }
-                    break;
-                }
-            }
-            if (targetPatient==null){
-                throw new Exception("Patient not in current session-- shouln't happen");
-            }
-            hm.put("part",targetPatient.getPartDates());
-            hm.put("full",targetPatient.getFullDates());
-            
-            String jsonResponse = new Gson().toJson(hm);
-            
+            String jsonResponse = new Gson().toJson(responseArray);
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
             response.getWriter().print(jsonResponse);
@@ -118,6 +92,5 @@ public class SaveDates extends HttpServlet {
                 }
         }
     }
-    
 
 }
