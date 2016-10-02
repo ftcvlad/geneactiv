@@ -1045,7 +1045,7 @@ function processCsvString(allArrayData, selDates, retrieveType, id) {
 
 
     //if no data selected at all
-    if (selectedData.length == 1) {
+    if (selectedData.length === 1) {
         setStatus(errorSpanGene, "No data in specified range", "ui-state-error");
         return;
     }
@@ -1078,81 +1078,37 @@ function processCsvString(allArrayData, selDates, retrieveType, id) {
            return;
        }
     
-    
    
         appsScriptLocked  = true;
         
         $.post("saveDates",{data:JSON.stringify(selectedData ),id:id},function(response){
             
-            dbSaveSucceed(response,selectedData,targetFrequency );
-        })
+              dbSaveSucceed(response,id, selectedData,targetFrequency);
+            
+            
+        },"json")
         .fail(function(jqXHR, textStatus, errorThrown ) {
            
-            dbSaveFailed(jqXHR.responseText);
-        });
-        
+            setStatus($("#errorSpanGENE"), jqXHR.responseText, "ui-state-error");
+            clearChartSliderAreaAndGetMemoryBack();
+            appsScriptLocked = false;
+        });  
     }
-
-   
 }
 
 
+function dbSaveSucceed(response, id, selectedData, frq){
 
-//SUCCEED AND FAILED SUCK ????!!!!
-function dbSaveFailed(error){
-     setStatus($("#errorSpanGENE"), error, "ui-state-error");
-     
-//     var sliderDiv = $("#slider_divGENE");
-//     if (sliderDiv.hasClass("ui-slider")) {//if initialized
-//         sliderDiv.slider("destroy");
-//     }
-//     else if (sliderDiv.children().length > 0){//if dygraph
-//     
-//         sliderDiv.html('');
-//     }
-//        
-//     $("#line_chart_divGENE").html('');
-//     $("#rangeGENE").text('');
-//     
-//     appsScriptLocked = false;
-     
-}
-
-function dbSaveSucceed(response, obj){
-
-     //add dates saved to DB
-            
-//    var currFilling =  $('#userIDselect option[value="'+response.id+'"]').data("foo");
-//            
-//            
-//   // from current filling delete dates that may have changed status (can be only  "part") 
-//    var allChangedDates = response.changeFilling["part"].concat(response.changeFilling["full"]);
-//            
-//    for (var i=0;i<currFilling["part"].length;i++){
-//         if (allChangedDates.indexOf(currFilling["part"][i])!==-1){
-//            currFilling["part"].splice(i,1);
-//            i--;
-//         }
-//    } 
-//            
-//            //append new dates
-//    for (i in response.changeFilling){
-//         if (!response.changeFilling.hasOwnProperty(i)){continue};
-//            
-//         currFilling[i] = currFilling[i].concat(response.changeFilling[i]);
-//    }
-//            
-//    
-//
-//    var errorSpanGene = $("#errorSpanGENE");
-//    setStatus(errorSpanGene, "Drawing graph...", "ui-state-highlight");
-//    drawGraph($("#graphTypeGene").val(), "Geneactiv", 'line_chart_divGENE', 'slider_divGENE', 'rangeGENE', obj.selectedData, obj.frq);
+    //update data-foo
+    $('#userIDselect option[value="'+id+'"]').data("foo",response );
+    
+    var errorSpanGene = $("#errorSpanGENE");
+    setStatus(errorSpanGene, "Drawing graph...", "ui-state-highlight");
+    drawGraph($("#graphTypeGene").val(), "Geneactiv", 'line_chart_divGENE', 'slider_divGENE', 'rangeGENE', selectedData, frq);
 
     setStatus($("#errorSpanGENE"), "Data saved", "ui-state-highlight");
 
-
     appsScriptLocked = false;
-
 }
 
 
@@ -1272,95 +1228,29 @@ function dbGetSucceed(response){
 
 
 
-//=========================================================================================================================================
-//===================================================================================================================
-//=========================================================================================================================================
-
-function validateDate(yearStr, monthNum, dayStr){
-   
-           if (dayStr!=="" && yearStr!==""){
-               var day = parseInt(dayStr);
-               var year = parseInt(yearStr);
-               
-               if (!(/^\d+$/.test(dayStr)) || !(/^\d+$/.test(yearStr))){
-                   throw "Date may contain numbers only";
-               }
-              
-               if (day<=0 || year<=0){
-                   throw "Date cannot be negative";
-               }
-               
-               var maxDays;
-               switch (monthNum) {
-                 case 2 :
-             
-                     maxDays = ((year % 4 === 0 && year % 100!==0) ||year % 400 === 0) ? 29 : 28; 
-                     break;
-                 case 9 : case 4 : case 6 : case 11 :
-                     maxDays = 30;
-                     break;
-                 default :
-                       maxDays=  31;
-             }
-              
-            
-            
-               if (day>maxDays){
-                       throw (maxDays+ " days in selected month");
-               }
-               else if (yearStr.length!==4){
-                       throw "year must have 4 digits";
-               
-               }
-           
-           }
-           else{
-             
-               return {birthDate: null };
-           }
-         
-         
-        return {birthDate: year+"-"+monthNum+"-"+day };
-
-}
-
-
-
-
-
-
-
-
-
-
-
-
 
 //=========================================================================================================================================
 //===============================================SAME AGAIN :) ============================================================================
 //=========================================================================================================================================
 
 var myDygraph = null;
+var myGoogleChart = null;
+var myHighchart = null;
 function drawGraph(chartType, chartTitle, chartId, sliderId, rangeId, selectedData, targetFrequencySec) {
 
 
     if (targetFrequencySec===undefined){//this means it is interday and googleChart should be used
-        targetFrequencySec = 100;
+        targetFrequencySec = 1234;
     }    
-  
+    clearChartSliderAreaAndGetMemoryBack();
 
-       if (targetFrequencySec>=60 && myDygraph!==null){//if after dygraphs
-          myDygraph.destroy();
-          $("#slider_divGENE").html('');
-          myDygraph=null;
-    }
     
 
 
     //DRAW GRAPHS
 
     var chartDiv = document.getElementById(chartId);
-    var chart;
+  
     if (chartType === "LC" || chartType === "LS") {
     
         if (targetFrequencySec>=60 ){//undefined for interday
@@ -1384,20 +1274,16 @@ function drawGraph(chartType, chartTitle, chartId, sliderId, rangeId, selectedDa
                 };
                 
                 if (chartType === "LC") {
-                    chart = new google.visualization.LineChart(chartDiv);//***
+                    myGoogleChart = new google.visualization.LineChart(chartDiv);//***
         
                 }
                 else if (chartType === "LS") {
                     options.isStacked = true;
-                    chart = new google.visualization.AreaChart(chartDiv);
+                    myGoogleChart = new google.visualization.AreaChart(chartDiv);
                 }
-                chart.draw(dataT, options);
+                myGoogleChart.draw(dataT, options);
          }
          else{
-               if (  $("#slider_divGENE").hasClass("ui-slider") ) {//if initialized
-                    $("#slider_divGENE").slider("destroy");
-                    $("#" + rangeId).text('');
-               }
              
                var headers =  selectedData.shift();
           
@@ -1416,7 +1302,7 @@ function drawGraph(chartType, chartTitle, chartId, sliderId, rangeId, selectedDa
       
                                       axisLabelFormatter: function(x, gran) {
                                       
-                                      console.log(gran);
+                                      
                                           return numberToTime(x, targetFrequencySec); 
                                           
                                       },
@@ -1450,10 +1336,6 @@ function drawGraph(chartType, chartTitle, chartId, sliderId, rangeId, selectedDa
                 myCategories.push(selectedData[i][0]);
             }
             
-          
-            
-            
-            
             var allSeries = [];
             for (var k=1;k<selectedData[0].length;k++){
                
@@ -1473,7 +1355,7 @@ function drawGraph(chartType, chartTitle, chartId, sliderId, rangeId, selectedDa
            
     
             Highcharts.seriesTypes.line.prototype.cropShoulder = 0;
-            new Highcharts.Chart({
+            myHighchart = new Highcharts.Chart({
 
                 chart: {
                     renderTo: chartId,
@@ -1542,13 +1424,6 @@ function drawGraph(chartType, chartTitle, chartId, sliderId, rangeId, selectedDa
                series: allSeries
         
             });
-    
-    
-          
-            
-    
-    
-    
     }
  
 
@@ -1561,6 +1436,8 @@ function drawGraph(chartType, chartTitle, chartId, sliderId, rangeId, selectedDa
           var sliderDiv = $("#" + sliderId);
           var rangeDiv = $("#" + rangeId);  
           //row indexes in datatable are 0 based
+          
+        
           sliderDiv.slider({//***
               range: true,
               min: 1,
@@ -1572,18 +1449,16 @@ function drawGraph(chartType, chartTitle, chartId, sliderId, rangeId, selectedDa
                       options.hAxis.viewWindow.min = ui.values[0] - 1;
                       options.hAxis.viewWindow.max = ui.values[1];//range is [min,max)
       
-                      chart.draw(dataT, options);
+                      myGoogleChart.draw(dataT, options);
                   }
                   else if(chartType==="HL" || chartType==="HS"){
                   
-                        chart=$(chartDiv).highcharts();//lol var here --> -2 hours
-                        chart.xAxis[0].options.tickInterval = Math.ceil((50/(targetFrequencySec/60))/((selectedData.length - 1 - 1)/(ui.values[1]-1 - ui.values[0]-1)));
+                        myHighchart=$(chartDiv).highcharts();//lol var here --> -2 hours
+                        myHighchart.xAxis[0].options.tickInterval = Math.ceil((50/(targetFrequencySec/60))/((selectedData.length - 1 - 1)/(ui.values[1]-1 - ui.values[0]-1)));
                         //  alert(chart.options.xAxis[0].tickInterval);
-                        chart.xAxis[0].setExtremes(ui.values[0] - 1, ui.values[1]-1);  
-                        chart.redraw();
-                  
+                        myHighchart.xAxis[0].setExtremes(ui.values[0] - 1, ui.values[1]-1);  
+                        myHighchart.redraw();
                   }
-      
               },
               slide: function (event, ui) {
                 
@@ -1593,8 +1468,40 @@ function drawGraph(chartType, chartTitle, chartId, sliderId, rangeId, selectedDa
           });
         
           rangeDiv.text(selectedData[sliderDiv.slider("values", 0)][0] + " - " + selectedData[sliderDiv.slider("values", 1)][0]);//***
+    
+    }
+   
+}
+
+
+
+function clearChartSliderAreaAndGetMemoryBack(){
+    if (myDygraph!==null){//DYGRAPH
+        myDygraph.destroy();
+        myDygraph=null;
+        $("#slider_divGENE").html('');
+    }
+    else {
+        
+        if (myHighchart!==null){//HIGHCHARTS
+            myHighchart.destroy();
+            myHighchart = null;
+        }
+        else if (myGoogleChart!==null){//GOOGLE CHART
+            myGoogleChart.clearChart();
+            myGoogleChart = null;
+        }
+        
+        if (  $("#slider_divGENE").hasClass("ui-slider") ) {//if initialized
+            $("#slider_divGENE").slider("destroy");
+            $("#rangeGENE").text('');
+        }
+       
     }
 }
+
+
+
 
 
 function numberToTime(x, targetFrequencySec){
@@ -1616,4 +1523,50 @@ function numberToTime(x, targetFrequencySec){
 
 }
 
+function validateDate(yearStr, monthNum, dayStr){
+   
+           if (dayStr!=="" && yearStr!==""){
+               var day = parseInt(dayStr);
+               var year = parseInt(yearStr);
+               
+               if (!(/^\d+$/.test(dayStr)) || !(/^\d+$/.test(yearStr))){
+                   throw "Date may contain numbers only";
+               }
+              
+               if (day<=0 || year<=0){
+                   throw "Date cannot be negative";
+               }
+               
+               var maxDays;
+               switch (monthNum) {
+                 case 2 :
+             
+                     maxDays = ((year % 4 === 0 && year % 100!==0) ||year % 400 === 0) ? 29 : 28; 
+                     break;
+                 case 9 : case 4 : case 6 : case 11 :
+                     maxDays = 30;
+                     break;
+                 default :
+                       maxDays=  31;
+             }
+              
+            
+            
+               if (day>maxDays){
+                       throw (maxDays+ " days in selected month");
+               }
+               else if (yearStr.length!==4){
+                       throw "year must have 4 digits";
+               
+               }
+           
+           }
+           else{
+             
+               return {birthDate: null };
+           }
+         
+         
+        return {birthDate: year+"-"+monthNum+"-"+day };
 
+}

@@ -20,6 +20,9 @@ import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
 import com.google.gson.Gson;
 import geneactiv.models.DateManager;
+import geneactiv.models.Patient;
+import java.util.ArrayList;
+import java.util.HashMap;
 /**
  *
  * @author Vlad
@@ -57,10 +60,45 @@ public class SaveDates extends HttpServlet {
             String[][] selectedData =  new Gson().fromJson(request.getParameter("data"), String[][].class);
 
             DateManager dm = new DateManager();
-            dm.saveDates(activeUserEmail,conn,pcpair_id,selectedData);
+            HashMap<String, ArrayList<String>> hm = dm.saveDates(activeUserEmail,conn,pcpair_id,selectedData);
+            
+            Patient targetPatient = null;
+            for (int i=0; i<us.allPatients.size();i++){
+                if (us.allPatients.get(i).getId()==pcpair_id){
+                    targetPatient = us.allPatients.get(i);
+                    ArrayList<String> currentPartDates = targetPatient.getPartDates();
+                    ArrayList<String> addedPartDates = hm.get("part");
+                    
+                    ArrayList<String> currentFullDates =targetPatient.getFullDates();
+                    ArrayList<String> addedFullDates = hm.get("full");
+                    
+                    for (String str : addedPartDates){
+                        if (!currentPartDates.contains(str)){
+                           currentPartDates.add(str);
+                        }
+                    }
+                    
+                    for (String str : addedFullDates){
+                        if (!currentFullDates.contains(str)){
+                           currentFullDates.add(str);
+                        }
+                    }
+                    break;
+                }
+            }
+            hm.put("part",targetPatient.getPartDates());
+            hm.put("full",targetPatient.getFullDates());
+            
+            String jsonResponse = new Gson().toJson(hm);
+            
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+            response.getWriter().print(jsonResponse);
+            
             
         }
         catch (SQLException sqle){
+                sqle.printStackTrace();
             
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 response.getWriter().write("Database error");
