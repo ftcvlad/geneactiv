@@ -1,5 +1,5 @@
 
-var appsScriptLocked = false;
+var ajaxLocked = false;
  
 $(function () {
 
@@ -195,26 +195,45 @@ $(function () {
            
       });
        
-  
-
-
+    //FOR AUTOLOGOUT WHEN SESSION EXPIRES   
+//    $.active = false;
+//    $('body').bind('click keypress', function() { $.active = true; });
+//   // checkActivity(1800000, 60000, 0); // timeout = 30 minutes, interval = 1 minute.
+//
+//    checkActivity(20000, 5000, 0);
     console.log(new Date().getTime());
 });
 
-
+//
+//    function checkActivity(timeout, interval, elapsed) {
+//        console.log("checking activity...");
+//        if ($.active) {
+//            elapsed = 0;
+//            $.active = false;
+//            $.get('heartbeat');
+//        }
+//        if (elapsed < timeout) {
+//            elapsed += interval;
+//            setTimeout(function() {
+//                checkActivity(timeout, interval, elapsed);
+//            }, interval);
+//        } else {
+//             window.location.href = "Login";
+//        }
+//    }
 
 
 function sendLogoutRequest(){
    
-    if (appsScriptLocked){return;}
+    if (ajaxLocked){return;}
     
-    appsScriptLocked = true;
+    ajaxLocked = true;
     $.post("logout",function(){
-        appsScriptLocked = false;
+        ajaxLocked = false;
         window.location.href = "Login";
     })
     .fail(function(jqXHR, textStatus, errorThrown ) {
-        appsScriptLocked = false;
+        ajaxLocked = false;
         alert(errorThrown);
     });
 }
@@ -472,7 +491,7 @@ function setStatus(divElement, message, classToAdd){
 
 //ADD USER
 function addNewPatient(){
-   
+            if (ajaxLocked){return;}
             $('#addUserFormContainerGene > p:eq(0)').text("Adding...");
 
             var name = $("#addNameFieldGene").val();
@@ -493,6 +512,7 @@ function addNewPatient(){
                 return;
             }
 
+            ajaxLocked = true;
             $.post("addPatient",{data:JSON.stringify(dataToSave)}, function(userAdded){
                 //alert(JSON.stringify(user));
                 
@@ -506,9 +526,11 @@ function addNewPatient(){
 
                   $("#userIDselect").selectmenu("destroy").selectmenu({width:150});
                   $('#addUserFormContainerGene > p:eq(0)').text("User added successfully!");
+                  ajaxLocked = false;
             },"json")
             .fail(function(jqXHR, errorStatus,errorThrown){
                   $('#addUserFormContainerGene > p:eq(0)').text(jqXHR.responseText);
+                  ajaxLocked = false;
             })
 
 
@@ -525,6 +547,7 @@ function addNewPatient(){
 //FIND USERS
 
 function findSavedPatients(table, datatable){
+        if (ajaxLocked){return;}
         $("#totalDeleteBtn").prop("disabled",true);
         $("#addToShortlistBtn").prop("disabled",true);
 
@@ -532,7 +555,7 @@ function findSavedPatients(table, datatable){
 
         $("#tableMessage").text("Retrieving patient list...");
 
-
+        ajaxLocked = true;
         $.get("findPatients",{name:$("#nameForFindInput").val()}, function(response){
                datatable.removeRows(0,  datatable.getNumberOfRows());
 
@@ -550,9 +573,11 @@ function findSavedPatients(table, datatable){
 
 
                $("#tableMessage").text("Done");
+               ajaxLocked = false;
         },"json")
         .fail(function(jqXHR, errorStatus, errorThrown){
               $("#tableMessage").text(jqXHR.responseText);
+              ajaxLocked = false;
         });
  
       
@@ -567,7 +592,7 @@ function findSavedPatients(table, datatable){
 //DELETE USER
 
 function deleteSelectedUser(table, datatable){
-
+        if (ajaxLocked){return;}
         $("#tableMessage").text("Deleting selected users...");
         var allUserIds = [];
 
@@ -576,12 +601,14 @@ function deleteSelectedUser(table, datatable){
            
             allUserIds.push(datatable.getValue(allSelected[i].row,3));
         }
-    
+        ajaxLocked = true;
         $.post("deletePatients",{idArray:JSON.stringify(allUserIds)}, function(){
                 updateTableListRemove(allUserIds,datatable,table);
+                
         })
        .fail(function(jqXHR, errorStatus, errorThrown){
              $("#tableMessage").text(jqXHR.responseText);
+             ajaxLocked = false;
         });
      
  
@@ -618,11 +645,13 @@ function updateTableListRemove(idsToRemove, datatable, table){
 
     }
     $("#tableMessage").text("Done"); 
+    ajaxLocked = false;
 }
 
 //REMOVE FROM SHORTLIST
 
 function removeFromShortList(){
+    if (ajaxLocked){return;}
 
      var id = $("#userIDselect").val();
      var errorSpanGene = $("#errorSpanGENE");
@@ -631,16 +660,19 @@ function removeFromShortList(){
      }
      else{
          
+        ajaxLocked = true;
         $.post("removeFromShortlist",{id:id}, function(){
                 
                 $('#userIDselect').find('option[value="'+id+'"]').remove(); 
                 $("#userIDselect").selectmenu("destroy").selectmenu({width:150});
                                 
                 errorSpanGene.text("Done");
+                ajaxLocked = false;
                 
         })
        .fail(function(jqXHR, errorStatus, errorThrown){
              errorSpanGene.text(jqXHR.responseText);
+             ajaxLocked = false;
         });       
      }
 }
@@ -649,7 +681,7 @@ function removeFromShortList(){
 //ADD TO SHORTLIST
 
 function addToShortlist(table, datatable){
-
+      if (ajaxLocked){return;}
       $("#tableMessage").text("Adding selected users to shortlist...");
       var allUsers = [];
       
@@ -669,6 +701,7 @@ function addToShortlist(table, datatable){
 
       }
      
+        ajaxLocked = true;
         $.post("addToShortlist",{patients:JSON.stringify(allUsers)}, function(patientsToAdd){
                 
                updateSelectEnlist(patientsToAdd);
@@ -676,6 +709,7 @@ function addToShortlist(table, datatable){
         })
        .fail(function(jqXHR, errorStatus, errorThrown){
               $("#tableMessage").text(jqXHR.responseText);
+              ajaxLocked = false;
         });    
      
   
@@ -700,6 +734,7 @@ function updateSelectEnlist(patientsToAdd){
         $("#userIDselect").selectmenu("destroy").selectmenu({width:150});
     }
     $("#tableMessage").text("Done"); 
+    ajaxLocked = false;
 }
 
 
@@ -736,7 +771,7 @@ function incrementDate(from_date) {
 
 function readSingleFile() {
 
-    if (appsScriptLocked){return;}
+    if (ajaxLocked){return;}
 
     var errorSpanGene  = $("#errorSpanGENE");
 
@@ -762,7 +797,7 @@ function readSingleFile() {
         setStatus(errorSpanGene, "Retrieving...", "ui-state-highlight");
     
         
-        appsScriptLocked = true;
+        ajaxLocked = true;
         
         var intraday = $('input[name=interIntraGene]:checked').val()==="en"?true:false;
         $.get("getDates",{allDates: JSON.stringify(allSelDates.sort()), id:id, intraday:intraday },function(response){
@@ -771,7 +806,7 @@ function readSingleFile() {
         .fail(function(jqXHR, errorStatus, errorThrown){
                 setStatus($("#errorSpanGENE"), jqXHR.responseText, "ui-state-error");
                 clearChartSliderAreaAndGetMemoryBack();
-                appsScriptLocked = false;
+                ajaxLocked = false;
         });
       
             
@@ -797,7 +832,6 @@ function readSingleFile() {
                     }
                 },
                 complete: function(results) {
-                    console.log("fin");
                      processCsvString(allArrayData, allSelDates.sort(), retrieveType, id);
                     
 
@@ -938,9 +972,6 @@ function processCsvString(allArrayData, selDates, retrieveType, id) {
             var nextSelectDataIndex = Math.floor(secondsPassed / targetFrequency) + 1;//+1 for header row in selectedData
 
 
-            //console.log("GOING THERE!: " + targetFrequency + "   " + selectedData[nextSelectDataIndex] + "  dataToWrite: " + allArrayData[traverseIndex][0].substring(11, 19));
-
-
             var stepsForPeriod = 0;
             var everyNth = targetFrequency / csvFrequency;
 
@@ -960,7 +991,6 @@ function processCsvString(allArrayData, selDates, retrieveType, id) {
 
                     var timeStr = allArrayData[traverseIndex][0].substring(11, 19);
 
-                   // console.log(timeStr + "---" + selectedData[nextSelectDataIndex][0]);
 
 
                     if (selectedData[nextSelectDataIndex][0] <= timeStr) {//BUG :(
@@ -1087,7 +1117,7 @@ function processCsvString(allArrayData, selDates, retrieveType, id) {
        }
     
    
-        appsScriptLocked  = true;
+        ajaxLocked  = true;
         
         $.post("saveDates",{data:JSON.stringify(selectedData ),id:id},function(response){
             
@@ -1099,7 +1129,7 @@ function processCsvString(allArrayData, selDates, retrieveType, id) {
            
             setStatus($("#errorSpanGENE"), jqXHR.responseText, "ui-state-error");
             clearChartSliderAreaAndGetMemoryBack();
-            appsScriptLocked = false;
+            ajaxLocked = false;
         });  
     }
 }
@@ -1116,7 +1146,7 @@ function dbSaveSucceed(response, id, selectedData, targetFrequency){
 
     setStatus($("#errorSpanGENE"), "Data saved", "ui-state-highlight");
 
-    appsScriptLocked = false;
+    ajaxLocked = false;
 }
 
 
@@ -1184,7 +1214,7 @@ function dbGetSucceed(responseArray, intraday){
 
 
                 if (j  % frqMinutes === 0 || j === (dataAvailableLength - 1)) {//add data every f hours or leftovers
-                //console.log(itemsPushed+"  -  "+ genFrqData[itemsPushed + 1]);
+                
                     genFrqData[itemsPushed + 1].push(totalStepsForPeriod);
                     totalStepsForPeriod = null;
                     itemsPushed++;
@@ -1209,7 +1239,7 @@ function dbGetSucceed(responseArray, intraday){
         }
     }
     
-    console.log(responseArray);
+    //console.log(responseArray);
       
     setStatus(errorSpanGene, "Drawing graph...", "ui-state-highlight");
     drawGraph($("#graphTypeGene").val(), "Geneactiv", 'line_chart_divGENE', 'slider_divGENE', 'rangeGENE', responseArray,frqSeconds);
@@ -1217,7 +1247,7 @@ function dbGetSucceed(responseArray, intraday){
    
 
     setStatus(errorSpanGene, "Done", "ui-state-highlight");
-    appsScriptLocked = false;
+    ajaxLocked = false;
 }
 
 
@@ -1331,7 +1361,7 @@ function drawGraph(chartType, chartTitle, chartId, sliderId, rangeId, selectedDa
          }
     }
     
-    else if (chartType==="HL" || chartType==="HS"){
+    else if (chartType==="HL" || chartType==="HS" || chartType==="HP"){
     
             var myCategories = [];
             for (var i=1;i<selectedData.length;i++){
@@ -1349,7 +1379,8 @@ function drawGraph(chartType, chartTitle, chartId, sliderId, rangeId, selectedDa
                var nextSeries = {
                     name: selectedData[0][k],
                     data: nextData,
-                    pointPlacement: 'on'            
+                    pointPlacement: 'on',
+                    cropThreshold:1
                 };
                 allSeries.push(nextSeries);
             
@@ -1419,7 +1450,9 @@ function drawGraph(chartType, chartTitle, chartId, sliderId, rangeId, selectedDa
                             enabled: false
                         },
                         lineWidth: 1,
-                        stacking: 'normal'//percent
+                        connectEnds:false,
+                        stacking: (chartType==="HP")? 'percent':'normal'//percent,
+                        
                     }
                }, 
         
@@ -1432,7 +1465,7 @@ function drawGraph(chartType, chartTitle, chartId, sliderId, rangeId, selectedDa
    
 
     
-    if (targetFrequencySec===null || targetFrequencySec>=60 ||  chartType==="HL" || chartType==="HS"){
+    if (targetFrequencySec===null || targetFrequencySec>=60 ||  chartType==="HL" || chartType==="HS" ||  chartType==="HP"){
 
 
           var sliderDiv = $("#" + sliderId);
@@ -1453,7 +1486,7 @@ function drawGraph(chartType, chartTitle, chartId, sliderId, rangeId, selectedDa
       
                       myGoogleChart.draw(dataT, options);
                   }
-                  else if(chartType==="HL" || chartType==="HS"){
+                  else if(chartType==="HL" || chartType==="HS" ||  chartType==="HP"){
                   
                         myHighchart=$(chartDiv).highcharts();//lol var here --> -2 hours
                         myHighchart.xAxis[0].options.tickInterval = Math.ceil((50/(targetFrequencySec/60))/((selectedData.length - 1 - 1)/(ui.values[1]-1 - ui.values[0]-1)));

@@ -75,7 +75,7 @@ public class LoginFilter implements Filter {
                 response.sendRedirect(loginURI);//+++
             }
         }
-        
+        //"XMLHttpRequest".equals(request.getHeader("X-Requested-With")); -- check if ajax
        //sendRedirect -- full path
        //forward -- relative!
     }

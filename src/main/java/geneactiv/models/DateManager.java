@@ -125,24 +125,27 @@ public class DateManager {
 
 
                 StringBuilder sb= new StringBuilder("VALUES ");
-                for ( int j=1;j<selectedData.length;j++){//@@@ remove nulls???
-                    sb.append("(").append(j).append(",").append(date_id).append(",?),");
+                for ( int j=1;j<selectedData.length;j++){
+                    if (selectedData[j][index]!=null){
+                        sb.append("(").append(j).append(",").append(date_id).append(",?),");
+                    }
+                   
                 }
                 String valuesString = sb.substring(0,sb.length()-1);//get rid of last comma
 
 
 
-               stmt3 = conn.prepareStatement("INSERT INTO stepsintime (Time,date_id,value) "+valuesString+
-                " ON DUPLICATE KEY UPDATE value=IFNULL(VALUES(value), value);");
 
+                stmt3 = conn.prepareStatement("INSERT INTO stepsintime (Time,date_id,value) "+valuesString+
+                " ON DUPLICATE KEY UPDATE value=VALUES(value);");
 
+               int preparedSetIndex = 1; 
                for ( int j=1;j<selectedData.length;j++){
                    if (selectedData[j][index]!=null){
-                       stmt3.setInt(j, (int)Math.round(Double.parseDouble(selectedData[j][index])));
+                       stmt3.setInt(preparedSetIndex, (int)Math.round(Double.parseDouble(selectedData[j][index])));
+                       preparedSetIndex++;
                    }
-                   else{//@@@ remove nulls???
-                       stmt3.setNull(j, 4); //4 is constant for java.sql.Types.INTEGER
-                   }
+
                }
 
                stmt3.execute();
@@ -216,7 +219,7 @@ public class DateManager {
             rsDates.beforeFirst(); 
         }
         else {
-            throw new Exception("No data in specified range");//@@@
+            throw new Exception("No data in specified range db");
         }
         
         
@@ -235,24 +238,20 @@ public class DateManager {
 
 
                               table[0][colIndex] = date;
-                              stmt2 = conn.prepareStatement("SELECT value "+
+                              stmt2 = conn.prepareStatement("SELECT value, Time "+
                                                             "FROM stepsintime "+
-                                                            "WHERE date_id="+date_id+" ORDER BY Time ASC;");
+                                                            "WHERE date_id="+date_id+";");
 
                               ResultSet rsValues = stmt2.executeQuery();
 
-                              int rowIndex=1;
+                              String val;
+                              
+                              //nulls are there by default :)
                               while(rsValues.next()){
-
-                                    String val = ""+rsValues.getInt(1);
-                                    if (rsValues.wasNull()) {
-                                      val = null;
-                                    }
-
-                                    table[rowIndex][colIndex] =val;
-                                    rowIndex++;
+                                    val = ""+rsValues.getInt(1);
+                                    table[rsValues.getInt(2)][colIndex] = val;
                               }
-
+                              
                               stmt2.close();
                               colIndex++;
                 }

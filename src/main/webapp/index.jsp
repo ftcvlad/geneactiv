@@ -178,6 +178,7 @@
                         <option value="LS" >LineStacked</option>
                         <option value="HL" selected="selected" >RadarLine</option>
                         <option value="HS">RadarStacked</option>
+                        <option value="HP">RadarStackedPercent</option>
                         
                      </select>               
               <!--submit-->
