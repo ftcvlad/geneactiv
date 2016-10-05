@@ -95,7 +95,7 @@ public class FindPatients extends HttpServlet {
         }
         catch (SQLException sqle){
                 sqle.printStackTrace();
-            
+                response.setContentType("text/plain");
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 response.getWriter().write("Database error");
         }

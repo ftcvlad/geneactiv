@@ -38,6 +38,7 @@ public class DateManager {
                 authStmt.setInt(2, pcpair_id);
                 ResultSet authRs = authStmt.executeQuery();
 
+                
                 if (authRs.next()==false){//no user-clinician (again, user modified some javascript)
                     throw new Exception("Bad input: Current clinician cannot save for selected patient");    
                 }

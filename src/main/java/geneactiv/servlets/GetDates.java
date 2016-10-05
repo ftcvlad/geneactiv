@@ -70,20 +70,22 @@ public class GetDates extends HttpServlet {
             String jsonResponse = new Gson().toJson(responseArray);
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
+             
             response.getWriter().print(jsonResponse);
             
             
         }
         catch (SQLException sqle){
                 sqle.printStackTrace();
-            
+                response.setContentType("text/plain");
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                response.getWriter().write("Database error");
+                response.getWriter().print("Database error");
         }
         catch(Exception  e){
-             e.printStackTrace();
-             response.setStatus(400);
-             response.getWriter().write(e.getMessage());
+                e.printStackTrace();
+                response.setContentType("text/plain");
+                response.setStatus(400);
+                response.getWriter().write(e.getMessage());
         }
         finally{
                 if (conn != null){

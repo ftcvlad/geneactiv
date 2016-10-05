@@ -36,10 +36,15 @@ public class LoginFilter implements Filter {
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws ServletException, IOException {    
        
         
+        
+        
         HttpServletRequest request = (HttpServletRequest) req;
         HttpServletResponse response = (HttpServletResponse) res;
         HttpSession session = request.getSession(false);
       
+        
+        
+        
         String contextPath = request.getContextPath();
         String loginURI = contextPath + "/Login";
         String registerURI = contextPath + "/Register";
@@ -69,13 +74,21 @@ public class LoginFilter implements Filter {
         else{
             if ( loginRequest || registerRequest){
               
+
                  chain.doFilter(request, response);
             }
             else{
-                response.sendRedirect(loginURI);//+++
+                if ("XMLHttpRequest".equals(request.getHeader("X-Requested-With"))){
+                    response.setStatus(401);
+                    response.getWriter().print("Session expired");
+                }
+                else{
+                    response.sendRedirect(loginURI);//+++
+                }
+                
             }
         }
-        //"XMLHttpRequest".equals(request.getHeader("X-Requested-With")); -- check if ajax
+
        //sendRedirect -- full path
        //forward -- relative!
     }

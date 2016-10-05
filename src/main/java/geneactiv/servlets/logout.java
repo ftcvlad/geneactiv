@@ -27,16 +27,14 @@ public class logout extends HttpServlet {
             throws ServletException, IOException {
         
         
-        HttpSession session  = request.getSession();
+        HttpSession session  = request.getSession(false);
         try
         {      
-            
+           
             session.removeAttribute("user");//to do it faster, garbage collector would do anyway after invalidate
-            session.invalidate();                               
-             
-
-
+            session.invalidate(); 
             
+                                           
         }
         catch (Exception sqle)
         {

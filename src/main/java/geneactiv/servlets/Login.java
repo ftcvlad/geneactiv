@@ -15,7 +15,7 @@ import java.util.HashMap;
 import javax.servlet.RequestDispatcher;
 
 
-
+import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -78,8 +78,13 @@ public class Login extends HttpServlet {
                     PatientManager pm = new PatientManager();
                     us.setAllPatients(pm.getShortlistedPatientsAndDates(username,conn));
                    
-                    request.getSession().setAttribute("user", us);
+                    //request.getSession().setAttribute("user", us);//here session created!
 
+                    HttpSession session = request.getSession();
+//                    session.setMaxInactiveInterval(10);
+                    session.setAttribute("user", us);
+                    
+                    
                     response.sendRedirect(request.getContextPath());
                     return;
                 }

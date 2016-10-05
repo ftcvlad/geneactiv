@@ -112,12 +112,13 @@ public class AddPatient extends HttpServlet {
         }
         catch (SQLException sqle){
                 sqle.printStackTrace();
-            
+                response.setContentType("text/plain");
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 response.getWriter().write("Database error");
         }
         catch (Exception e){
                 response.setStatus(400);
+                response.setContentType("text/plain");
                 response.getWriter().write("Bad input --shouldn't happen!");
         }
         finally{

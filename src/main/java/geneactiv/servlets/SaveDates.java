@@ -102,12 +102,13 @@ public class SaveDates extends HttpServlet {
         }
         catch (SQLException sqle){
                 sqle.printStackTrace();
-            
+                response.setContentType("text/plain");
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 response.getWriter().write("Database error");
         }
         catch(Exception  e){
              e.printStackTrace();
+             response.setContentType("text/plain");
              response.setStatus(400);
              response.getWriter().write(e.getMessage());
         }

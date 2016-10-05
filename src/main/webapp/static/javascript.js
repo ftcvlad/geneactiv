@@ -195,50 +195,49 @@ $(function () {
            
       });
        
-    //FOR AUTOLOGOUT WHEN SESSION EXPIRES   
-//    $.active = false;
-//    $('body').bind('click keypress', function() { $.active = true; });
-//   // checkActivity(1800000, 60000, 0); // timeout = 30 minutes, interval = 1 minute.
-//
-//    checkActivity(20000, 5000, 0);
     console.log(new Date().getTime());
 });
 
-//
-//    function checkActivity(timeout, interval, elapsed) {
-//        console.log("checking activity...");
-//        if ($.active) {
-//            elapsed = 0;
-//            $.active = false;
-//            $.get('heartbeat');
-//        }
-//        if (elapsed < timeout) {
-//            elapsed += interval;
-//            setTimeout(function() {
-//                checkActivity(timeout, interval, elapsed);
-//            }, interval);
-//        } else {
-//             window.location.href = "Login";
-//        }
-//    }
+
+
 
 
 function sendLogoutRequest(){
    
     if (ajaxLocked){return;}
-    
-    ajaxLocked = true;
-    $.post("logout",function(){
-        ajaxLocked = false;
-        window.location.href = "Login";
-    })
-    .fail(function(jqXHR, textStatus, errorThrown ) {
-        ajaxLocked = false;
-        alert(errorThrown);
-    });
+
+    doAjaxRequest("logout",{},
+                    function(){
+                         window.location.href = "Login";
+                    },   
+                           
+                    function(jqXHR,errorStatus,errorThrown){
+                    },
+                    "post");
+
 }
 
+function doAjaxRequest(path, data, successF, failF, method){
+    ajaxLocked=true;
+    jQuery.ajax({
+        method: method, 
+        url: path, 
+       // dataType: "json", // Data type, HTML, json etc.
+        data: data,
+        success: function ( response,textStatus,jqXHR){successF(response);},
+        error: function(jqXHR, errorStatus, errorThrown) {
+//alert(jqXHR.responseText);
+            if( jqXHR.responseText==="Session expired" ) {
+                        window.location="Login";
+            }
+            else{
+                failF(jqXHR, errorStatus,errorThrown);
+            }
+        },
+        complete: function(){ajaxLocked=false;}
 
+    });
+}
 
 
 
@@ -512,28 +511,22 @@ function addNewPatient(){
                 return;
             }
 
-            ajaxLocked = true;
-            $.post("addPatient",{data:JSON.stringify(dataToSave)}, function(userAdded){
-                //alert(JSON.stringify(user));
-                
-                  $('#userIDselect').prepend($('<option>', { 
-                        value: userAdded.id,
-                        text : userAdded.alias,
-                        "data-foo" :  JSON.stringify({ "full":[],"part":[]}),
-                        selected: "selected"
-                  }));
+            doAjaxRequest("addPatient",{data:JSON.stringify(dataToSave)},
+                    function(response){   
+                            $('#userIDselect').prepend($('<option>', { 
+                                  value: response.id,
+                                  text : response.alias,
+                                  "data-foo" :  JSON.stringify({ "full":[],"part":[]}),
+                                  selected: "selected"
+                            }));
 
 
-                  $("#userIDselect").selectmenu("destroy").selectmenu({width:150});
-                  $('#addUserFormContainerGene > p:eq(0)').text("User added successfully!");
-                  ajaxLocked = false;
-            },"json")
-            .fail(function(jqXHR, errorStatus,errorThrown){
-                  $('#addUserFormContainerGene > p:eq(0)').text(jqXHR.responseText);
-                  ajaxLocked = false;
-            })
+                            $("#userIDselect").selectmenu("destroy").selectmenu({width:150});
+                            $('#addUserFormContainerGene > p:eq(0)').text("User added successfully!");},
+                    function(jqXHR,errorStatus,errorThrown){
+                           $('#addUserFormContainerGene > p:eq(0)').text(jqXHR.responseText);
 
-
+                    },"post");
        
      
 }
@@ -555,31 +548,24 @@ function findSavedPatients(table, datatable){
 
         $("#tableMessage").text("Retrieving patient list...");
 
-        ajaxLocked = true;
-        $.get("findPatients",{name:$("#nameForFindInput").val()}, function(response){
+      
+        doAjaxRequest("findPatients",{name:$("#nameForFindInput").val()},
+            function(response){ 
                datatable.removeRows(0,  datatable.getNumberOfRows());
-
                for (var i=0;i<response.length;i++){
-                 
                     datatable.addRow([response[i].name, response[i].surname, response[i].birthDate,response[i].id, 
                             JSON.stringify({fullDates:response[i].fullDates,  partDates:response[i].partDates})] ); 
                }
-
-                var view = new google.visualization.DataView(datatable);
-                view.setColumns([0,1,2]); //here you set the columns you want to display
-
-
+               var view = new google.visualization.DataView(datatable);
+               view.setColumns([0,1,2]); //here you set the columns you want to display
                table.draw(view, {width: '100%',  cssClassNames:{headerRow : "tableHeader", tableRow: "tableRow", oddTableRow: "oddRow", headerCell  :"headerCell" }});
-
-
                $("#tableMessage").text("Done");
-               ajaxLocked = false;
-        },"json")
-        .fail(function(jqXHR, errorStatus, errorThrown){
-              $("#tableMessage").text(jqXHR.responseText);
-              ajaxLocked = false;
-        });
- 
+               
+            },
+            function(jqXHR,errorStatus,errorThrown){
+                   $("#tableMessage").text(jqXHR.responseText);
+
+        },"get");
       
             
 }
@@ -601,15 +587,15 @@ function deleteSelectedUser(table, datatable){
            
             allUserIds.push(datatable.getValue(allSelected[i].row,3));
         }
-        ajaxLocked = true;
-        $.post("deletePatients",{idArray:JSON.stringify(allUserIds)}, function(){
-                updateTableListRemove(allUserIds,datatable,table);
-                
-        })
-       .fail(function(jqXHR, errorStatus, errorThrown){
-             $("#tableMessage").text(jqXHR.responseText);
-             ajaxLocked = false;
-        });
+        
+        
+        doAjaxRequest("deletePatients",{idArray:JSON.stringify(allUserIds)},
+            function(){ return updateTableListRemove(allUserIds,datatable,table);},
+            function(jqXHR,errorStatus,errorThrown){
+                  $("#tableMessage").text(jqXHR.responseText);
+
+        },"post");
+        
      
  
 }
@@ -648,6 +634,9 @@ function updateTableListRemove(idsToRemove, datatable, table){
     ajaxLocked = false;
 }
 
+
+
+
 //REMOVE FROM SHORTLIST
 
 function removeFromShortList(){
@@ -660,20 +649,16 @@ function removeFromShortList(){
      }
      else{
          
-        ajaxLocked = true;
-        $.post("removeFromShortlist",{id:id}, function(){
-                
+        doAjaxRequest("removeFromShortlist",{id:id},
+            function(){ 
                 $('#userIDselect').find('option[value="'+id+'"]').remove(); 
-                $("#userIDselect").selectmenu("destroy").selectmenu({width:150});
-                                
-                errorSpanGene.text("Done");
-                ajaxLocked = false;
-                
-        })
-       .fail(function(jqXHR, errorStatus, errorThrown){
-             errorSpanGene.text(jqXHR.responseText);
-             ajaxLocked = false;
-        });       
+                $("#userIDselect").selectmenu("destroy").selectmenu({width:150});              
+                errorSpanGene.text("Done");},
+            function(jqXHR,errorStatus,errorThrown){
+                 errorSpanGene.text(jqXHR.responseText);
+
+        },"post");
+        
      }
 }
 
@@ -681,40 +666,39 @@ function removeFromShortList(){
 //ADD TO SHORTLIST
 
 function addToShortlist(table, datatable){
-      if (ajaxLocked){return;}
-      $("#tableMessage").text("Adding selected users to shortlist...");
-      var allUsers = [];
-      
-      var allSelected =  table.getSelection();
-      for (var i=0; i<allSelected.length; i++){
-              
-            var row = allSelected[i].row;
+        if (ajaxLocked){return;}
+        $("#tableMessage").text("Adding selected users to shortlist...");
+        var allUsers = [];
 
-            var id = datatable.getValue(row,3);
-            var name = datatable.getValue(row,0);
-            var surname = datatable.getValue(row,1);
-            var birthDate = datatable.getValue(row,2);
-            var fillings = datatable.getValue(row,4);
+        var allSelected =  table.getSelection();
+        for (var i=0; i<allSelected.length; i++){
 
-            var dates = JSON.parse(fillings);
-            allUsers.push({id: id, name: name,surname:surname, birthDate:birthDate,fullDates: dates.fullDates, partDates: dates.partDates  });
+              var row = allSelected[i].row;
 
-      }
+              var id = datatable.getValue(row,3);
+              var name = datatable.getValue(row,0);
+              var surname = datatable.getValue(row,1);
+              var birthDate = datatable.getValue(row,2);
+              var fillings = datatable.getValue(row,4);
+
+              var dates = JSON.parse(fillings);
+              allUsers.push({id: id, name: name,surname:surname, birthDate:birthDate,fullDates: dates.fullDates, partDates: dates.partDates  });
+
+        }
      
-        ajaxLocked = true;
-        $.post("addToShortlist",{patients:JSON.stringify(allUsers)}, function(patientsToAdd){
-                
-               updateSelectEnlist(patientsToAdd);
-                
-        })
-       .fail(function(jqXHR, errorStatus, errorThrown){
-              $("#tableMessage").text(jqXHR.responseText);
-              ajaxLocked = false;
-        });    
+        doAjaxRequest("addToShortlist",{patients:JSON.stringify(allUsers)},
+            function(response){return   updateSelectEnlist(response);},
+            function(jqXHR,errorStatus,errorThrown){
+                $("#tableMessage").text(jqXHR.responseText);
+
+        },"post");
      
   
   
 }
+
+
+
 
 
 function updateSelectEnlist(patientsToAdd){
@@ -792,6 +776,9 @@ function readSingleFile() {
         }
     }
 
+
+
+
     if (retrieveType==="DB"){
     
         setStatus(errorSpanGene, "Retrieving...", "ui-state-highlight");
@@ -800,14 +787,16 @@ function readSingleFile() {
         ajaxLocked = true;
         
         var intraday = $('input[name=interIntraGene]:checked').val()==="en"?true:false;
-        $.get("getDates",{allDates: JSON.stringify(allSelDates.sort()), id:id, intraday:intraday },function(response){
-              dbGetSucceed(response,intraday);
-        },"json")
-        .fail(function(jqXHR, errorStatus, errorThrown){
-                setStatus($("#errorSpanGENE"), jqXHR.responseText, "ui-state-error");
-                clearChartSliderAreaAndGetMemoryBack();
-                ajaxLocked = false;
-        });
+        
+    
+        doAjaxRequest("getDates",{allDates: JSON.stringify(allSelDates.sort()), id:id, intraday:intraday },
+                function(response){return dbGetSucceed(response,intraday);},
+                function(jqXHR,errorStatus,errorThrown){
+                     setStatus($("#errorSpanGENE"), jqXHR.responseText, "ui-state-error");
+                     clearChartSliderAreaAndGetMemoryBack();
+        },"get");
+    
+
       
             
     }
@@ -848,6 +837,9 @@ function readSingleFile() {
 
  
 }
+
+ 
+
 
 
 
@@ -1115,22 +1107,15 @@ function processCsvString(allArrayData, selDates, retrieveType, id) {
            setStatus(errorSpanGene, "Selected dates are fully saved", "ui-state-error");
            return;
        }
-    
-   
-        ajaxLocked  = true;
         
-        $.post("saveDates",{data:JSON.stringify(selectedData ),id:id},function(response){
-            
-              dbSaveSucceed(response,id, selectedData,targetFrequency);
-            
-            
-        },"json")
-        .fail(function(jqXHR, textStatus, errorThrown ) {
+        doAjaxRequest("saveDates",{data:JSON.stringify(selectedData ),id:id},
+            function(response){return   dbSaveSucceed(response,id, selectedData,targetFrequency);},
+            function(jqXHR,errorStatus,errorThrown){
+                setStatus($("#errorSpanGENE"), jqXHR.responseText, "ui-state-error");
+                clearChartSliderAreaAndGetMemoryBack();
            
-            setStatus($("#errorSpanGENE"), jqXHR.responseText, "ui-state-error");
-            clearChartSliderAreaAndGetMemoryBack();
-            ajaxLocked = false;
-        });  
+        },"post");
+        
     }
 }
 
@@ -1146,16 +1131,15 @@ function dbSaveSucceed(response, id, selectedData, targetFrequency){
 
     setStatus($("#errorSpanGENE"), "Data saved", "ui-state-highlight");
 
-    ajaxLocked = false;
 }
 
 
 
 
+  
 
 
-
-function dbGetSucceed(responseArray, intraday){
+function dbGetSucceed(responseArray,intraday){
     
     //[[2016-06-09,2016-06-10]["12","14"]["234","1212"]...]  for intraday -> add time column + respective frequency + parseInt
     //[[Date,Total steps][2016-06-09,"325876"][2016-06-10,"213111"]...] for interday -> parseInt
@@ -1247,7 +1231,7 @@ function dbGetSucceed(responseArray, intraday){
    
 
     setStatus(errorSpanGene, "Done", "ui-state-highlight");
-    ajaxLocked = false;
+    
 }
 
 

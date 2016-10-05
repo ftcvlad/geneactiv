@@ -62,13 +62,14 @@ public class DeletePatients extends HttpServlet {
         }
         catch (SQLException sqle){
                 sqle.printStackTrace();
-            
+                response.setContentType("text/plain");
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 response.getWriter().write("Database error");
         }
         catch(Exception e){//if user changed value in <select>
-             response.setStatus(400);
-             response.getWriter().write("Bad input --shouldn't happen!");
+                response.setStatus(400);
+                response.setContentType("text/plain");
+                response.getWriter().write("Bad input --shouldn't happen!");
         }
         finally{
                 if (conn != null){

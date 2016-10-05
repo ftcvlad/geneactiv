@@ -68,13 +68,14 @@ public class RemoveFromShortlist extends HttpServlet {
         }
         catch (SQLException sqle){
                 sqle.printStackTrace();
-            
+                response.setContentType("text/plain");
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 response.getWriter().write("Database error");
         }
         catch(NumberFormatException  nfe){//if user changed value in <select>
-             response.setStatus(400);
-             response.getWriter().write("Bad input");
+                response.setStatus(400);
+                response.setContentType("text/plain");
+                response.getWriter().write("Bad input");
         }
         finally{
                 if (conn != null){
