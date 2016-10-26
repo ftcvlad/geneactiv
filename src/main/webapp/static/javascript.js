@@ -1369,6 +1369,7 @@ function drawGraph(chartType, chartTitle, chartId, sliderId, rangeId, selectedDa
                 allSeries.push(nextSeries);
             
             }
+           // selectedData.shift();//get rid of header, so that when it's used in slider, it has the same length as series
            
     
             Highcharts.seriesTypes.line.prototype.cropShoulder = 0;
@@ -1396,9 +1397,10 @@ function drawGraph(chartType, chartTitle, chartId, sliderId, rangeId, selectedDa
                     tickInterval:Math.round(50/(targetFrequencySec/60)),
                     minRange:1,
                     type:'linear',
-                    endOnTick:true,
-                    startOnTick:true
-                 
+                    endOnTick:false,
+                    startOnTick:false,
+                    min:0,
+                    max:selectedData.length-1//-2 is not a solution for  all my problems :(
                             
                 },
         

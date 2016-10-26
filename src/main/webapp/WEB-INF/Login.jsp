@@ -4,9 +4,8 @@
 <html>
 
         <head>
-            
-            <link rel="stylesheet" type="text/css" href="/visitFormMaven/static/authentication.css">
-           
+          
+            <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/static/authentication.css">
             <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
             <title>Login</title>
             

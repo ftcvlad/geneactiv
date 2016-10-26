@@ -45,8 +45,8 @@
               <li><a href="#tabs-2">GENEActiv</a></li>
            </ul>
            <div id="linksSection">
-                <button class="imageButton" id="fitbitLink"  onclick="location.href='https://script.google.com/macros/s/AKfycbwhTCgEysLClLPQSp8yYkyr51qjQVpICQR-MTFbFVQPNafxyNY/exec'"></button>
-                <button class="imageButton" id="formLink" onclick="location.href='https://script.google.com/macros/s/AKfycbxXETkjT1OnF3g7M5u7ONMqOxF7mpR2q6_rUEjM-AxGS6yiBBg/exec'" ></button>                
+                <button class="imageButton" id="fitbitLink"  onclick="location.href='//silva.computing.dundee.ac.uk/2016-vlad-fitbit/'"></button>
+                <button class="imageButton" id="formLink" onclick="location.href='//silva.computing.dundee.ac.uk/2016-vlad-form/'" ></button>                
                 <button class="imageButton tooltipShower" id="logout" data-tooltip-content="#logoutFrame" ></button>
                  
                 <div class="tooltip_content">
@@ -54,6 +54,8 @@
                       <div id="logoutFrame">
 
                            <p >${sessionScope.user.username}</p>
+                          
+                         
                           <button onclick="sendLogoutRequest();" >Sign out</button>
                       </div>
                 </div>

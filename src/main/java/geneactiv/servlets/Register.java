@@ -25,7 +25,7 @@ import java.sql.SQLIntegrityConstraintViolationException;
  *
  * @author Vlad
  */
-@WebServlet(name = "register", urlPatterns = {"/Register"})
+//@WebServlet(name = "register", urlPatterns = {"/Register"})
 public class Register extends HttpServlet {
 
 

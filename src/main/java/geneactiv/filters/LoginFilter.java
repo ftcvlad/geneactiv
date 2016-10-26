@@ -6,6 +6,8 @@ package geneactiv.filters;
  * and open the template in the editor.
  */
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -58,13 +60,20 @@ public class LoginFilter implements Filter {
         
         //System.out.println(request.getRequestURI()+" "+loggedIn+" "+loginRequest+" "+registerRequest+" "+System.currentTimeMillis());
       
+        
+//        File outputFile = new File( request.getServletContext().getRealPath("/")+"Log.txt");
+//    FileWriter fout = new FileWriter(outputFile);
+//    fout.write(contextPath);
+//    fout.close();
+        
+//        System.out.println("--------------------> "+request.getServletContext().getRealPath("/"));
        
-        if (requestURI.startsWith("/visitFormMaven/static/")) {
+        if (requestURI.startsWith(contextPath+"/static/")) {
             chain.doFilter(request, response);
         } 
         else if (loggedIn){
             if (loginRequest || registerRequest){
-                response.sendRedirect(contextPath);//+++
+                response.sendRedirect(contextPath+"/");//+++
             }
             else{
                 
@@ -84,6 +93,7 @@ public class LoginFilter implements Filter {
                 }
                 else{
                     response.sendRedirect(loginURI);//+++
+                   
                 }
                 
             }

@@ -85,7 +85,7 @@ public class Login extends HttpServlet {
                     session.setAttribute("user", us);
                     
                     
-                    response.sendRedirect(request.getContextPath());
+                    response.sendRedirect(request.getContextPath()+"/");
                     return;
                 }
                 else{

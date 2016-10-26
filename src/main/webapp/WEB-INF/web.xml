@@ -103,6 +103,8 @@
     </init-param>
     <load-on-startup>1</load-on-startup>
   </servlet>
+  
+     
   <!-- The JSP page compiler and execution servlet, which is the mechanism  -->
   <!-- used by Tomcat to support JSP pages.  Traditionally, this servlet    -->
   <!-- is mapped to the URL pattern "*.jsp".  This servlet supports the     -->
@@ -4639,6 +4641,16 @@
     <resource-env-ref-type>javax.sql.DataSource</resource-env-ref-type>
   </resource-env-ref>
   
+
+
+     <servlet>
+         <servlet-name>Servlet1Register</servlet-name>
+         <servlet-class>geneactiv.servlets.Register</servlet-class>
+    </servlet>
+    <servlet-mapping>
+         <servlet-name>Servlet1Register</servlet-name>
+         <url-pattern>/Register</url-pattern>
+    </servlet-mapping>
   
 </web-app>
 
