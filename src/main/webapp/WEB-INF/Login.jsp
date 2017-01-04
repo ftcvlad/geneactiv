@@ -22,7 +22,7 @@
 
                         <form method="POST"  action="Login">
                           <input type="text" required name="username"  placeholder="Username (1-30 characters)" maxlength="30" > 
-                          <input type="text" required name="password"  placeholder="Password (1-16 characters)" maxlength="16" > 
+                          <input type="password" required name="password"  placeholder="Password (1-16 characters)" maxlength="16" > 
                           <input type="submit" value="Login">
                           
                           <footer class="clearfix">
